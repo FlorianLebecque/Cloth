@@ -32,7 +32,7 @@ namespace Cloth.classes
                     if(so1 != so2) {
 
                         float distanceSquared = Vector3.DistanceSquared(so1.position,so2.position);
-                        float distance = Vector3.Distance(so1.position,so2.position);
+                        
                         Vector3 unitVector = Vector3.Normalize(so2.position - so1.position);
 
                         

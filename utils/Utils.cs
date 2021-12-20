@@ -120,6 +120,11 @@ namespace RaylibUtils
             materials[materialIndex].shader = shader;
         }
 
+        public unsafe static Mesh GetMeshFromModel(ref Model model){
+            Mesh* mesh = (Mesh*)model.meshes.ToPointer();
+            return *mesh;
+        }
+
         // Helper functions to pass data into raylib. Pins the data so we can pass in a stable IntPtr to raylib.
         public static void SetShaderValue<T>(Shader shader, int uniformLoc, T value, ShaderUniformDataType uniformType)
         {

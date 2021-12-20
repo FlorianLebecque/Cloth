@@ -7,10 +7,12 @@ namespace Cloth.classes
 {
     public class PhysicSpace {
         
-        private List<PhysicObject> SpaceObjects;
+        public List<PhysicObject> SpaceObjects;
         
         public float G { get; set; }
-        float div = 4;
+        float div = 2;
+        float damping = 0.9f;
+        float cur_dt = 0.01f;
         
         public PhysicSpace(float G_){
             G = G_;
@@ -32,7 +34,6 @@ namespace Cloth.classes
                     if(so1 != so2) {
 
                         float distanceSquared = Vector3.DistanceSquared(so1.position,so2.position);
-                        
                         Vector3 unitVector = Vector3.Normalize(so2.position - so1.position);
 
                         
@@ -46,14 +47,14 @@ namespace Cloth.classes
         }
 
         public void UpdatePosition(){
-            float dt = GetFrameTime();
+            float dt = cur_dt;
             foreach(PhysicObject PO in SpaceObjects){
                 PO.UpdatePosition(dt/div);
             }
         }
 
         public void UpdateVelocity(){
-            float dt = GetFrameTime();
+            float dt = cur_dt;
             foreach(PhysicObject PO in SpaceObjects){
                 PO.UpdateVelocity(dt/div);
             }
@@ -65,17 +66,28 @@ namespace Cloth.classes
                     if(so1 != so2){
                         float distance = Vector3.Distance(so1.position,so2.position);
                         if(distance < (so1.radius + so2.radius)){   //collision
-                            Vector3 Normal = Vector3.Normalize(so2.position - so1.position); //V1 -> V2
+
+                            float totalMass = so1.mass + so2.mass;
+                            float mass_factor = so1.mass/totalMass;
+
+                            Vector3 Normal = Vector3.Normalize(so2.position - so1.position);  //V1 -> V2
                             Vector3 ExitVector = Normal * ((so1.radius+so2.radius)-distance); //V1 -> V2
 
-                            float SO1InWardVelocity = Vector3.Dot(so1.velocity,Normal);
-                            Vector3 SO1VelocityCorrection = -Normal * SO1InWardVelocity;
+                            float ViSO1 = Vector3.Dot(so1.velocity,Normal) * damping;
+                            float ViSO2 = Vector3.Dot(so2.velocity,Normal) * damping;
+                            
+                            so1.velocity -= Normal * ViSO1;
+                            so2.velocity -= Normal * ViSO2;
 
-                            float SO2InWardVelocity = Vector3.Dot(so2.velocity,Normal);
-                            Vector3 SO2VelocityCorrection = -Normal * SO2InWardVelocity;
+                            float VfSO1 = ViSO2;
+                            float VfSO2 = ViSO1;
+                            if(so1.mass != so2.mass){
+                                VfSO1 = (((so1.mass-so2.mass)/(totalMass))  * ViSO1) + (((2*so2.mass)/(totalMass))*ViSO2);
+                                VfSO2 = (((2*so1.mass)/(so1.mass-so2.mass)) * ViSO1) + (((so1.mass-so2.mass)/(totalMass))*ViSO2);
+                            }
 
-                            so1.velocity += SO1VelocityCorrection;
-                            so2.velocity += SO2VelocityCorrection;
+                            so1.velocity +=  Normal * (VfSO1);
+                            so2.velocity += -Normal * (VfSO2);
 
                             float SO1InwardVectorValue = Vector3.Dot(so1.acceleration * so1.mass,Normal);  //projection du vector de force sur la normal
                             Vector3 SO1ReactionForce = -Normal * SO1InwardVectorValue; 
@@ -83,18 +95,13 @@ namespace Cloth.classes
                             float SO2InwardVectorValue = Vector3.Dot(so2.acceleration * so2.mass,Normal);  //projection du vector de force sur la normal
                             Vector3 SO2ReactionForce = -Normal * SO2InwardVectorValue; 
 
+
+
                             so1.AddForce(SO1ReactionForce);
                             so2.AddForce(SO2ReactionForce);
 
-                            if(so1.mass < so2.mass){
-
-                                so1.position -= (ExitVector);
-                                
-                            }else{
-
-                                so2.position += (ExitVector);
-
-                            }
+                            so1.position -= (ExitVector * (1-mass_factor));
+                            so2.position += (ExitVector * (mass_factor));
                         }
                     }
                 }

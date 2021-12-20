@@ -8,10 +8,10 @@ namespace Cloth.classes {
         public Dictionary<String,Particule> nodes;
         public Dictionary<String,List<Spring>> links;
 
-        public float K = 20f;
+        public float K = 150000f;
         public float cd = 0.05f;
 
-        private float rest_distance = 1f;
+        private float rest_distance = 3f;
         private Vector3 starting_pos; 
 
         public Tissue(Vector3 position,int n,int m){
@@ -29,8 +29,8 @@ namespace Cloth.classes {
                     Particule pt = new Particule(
                         new Vector3(start_pos_x+i*rest_distance,starting_pos.Y,start_pos_z+j*rest_distance),
                         new Vector3(0),
-                        0.01f,
-                        0.25f
+                        0.1f,
+                        1f
                     );
 
                     String key = String.Format("{0}-{1}",i,j);
@@ -61,7 +61,7 @@ namespace Cloth.classes {
                 potential_links.Add(String.Format("{0}-{1}",i - 1,j + 1));  //  left down
                 potential_links.Add(String.Format("{0}-{1}",i + 1,j + 1));  //  right down
 
-                AddLink(correct_links,current,pt_key,potential_links,15f);
+                AddLink(correct_links,current,pt_key,potential_links,150f);
                 potential_links.Clear();
 
                     //direct link
@@ -70,7 +70,7 @@ namespace Cloth.classes {
                 potential_links.Add(String.Format("{0}-{1}",i,j - 1));  //  up
                 potential_links.Add(String.Format("{0}-{1}",i,j + 1));  //  down
 
-                AddLink(correct_links,current,pt_key,potential_links,20f);
+                AddLink(correct_links,current,pt_key,potential_links,200f);
                 potential_links.Clear();
 
                     //double link
@@ -79,7 +79,7 @@ namespace Cloth.classes {
                 potential_links.Add(String.Format("{0}-{1}",i,j - 2));  //  up
                 potential_links.Add(String.Format("{0}-{1}",i,j + 2));  //  down
                 
-                AddLink(correct_links,current,pt_key,potential_links,10f);
+                AddLink(correct_links,current,pt_key,potential_links,100f);
                 potential_links.Clear();
 
                 links.Add(pt_key,correct_links);

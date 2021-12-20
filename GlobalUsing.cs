@@ -9,7 +9,8 @@ global using static Raylib_cs.KeyboardKey;
 global using static Raylib_cs.ShaderLocationIndex;
 global using static Raylib_cs.MaterialMapIndex;
 global using System.Numerics;
-global using OpenTK.Compute.OpenCL;
+global using OpenCL.Net;
+
 
 
 global using Cloth.classes;

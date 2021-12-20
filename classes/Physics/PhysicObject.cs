@@ -7,19 +7,16 @@ namespace Cloth.classes
 {
     public class PhysicObject : PhysicDataObject{
         
-        Vector3 lastVelocity;
-        Vector3 lastPosition;
 
         public PhysicObject(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_):base(pos_,vel_,mass_,radius_){
 
         }
 
         public void UpdateVelocity(float dt){
-            lastVelocity = velocity;
             velocity += acceleration  * dt;
         }
         public void UpdatePosition(float dt){
-            lastPosition = position;
+
             position += velocity * dt ;
         }
 

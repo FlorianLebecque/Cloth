@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenCL.Net" Version="2.2.3" />
+    <PackageReference Include="OpenTK" Version="4.6.7" />
     <PackageReference Include="Raylib-cs" Version="3.7.0.1" />
   </ItemGroup>
 

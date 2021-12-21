@@ -68,8 +68,9 @@ namespace OPENCL {
         public CLBuffer CreateBuffer<T>(MemoryFlags mFlag, T[] array) where T:unmanaged {
             CLResultCode err = new CLResultCode();
 
+            int size_t = Marshal.SizeOf(typeof(T));
             int sizes = Marshal.SizeOf(typeof(T))*array.Count();
-            UIntPtr size = (UIntPtr)sizes;
+            UIntPtr size = new UIntPtr((uint)sizes);
 
 
             CLBuffer t = CL.CreateBuffer(Gpu_context,MemoryFlags.ReadOnly,size,(IntPtr)null,out err);
@@ -128,7 +129,7 @@ namespace OPENCL {
             int sizes = Marshal.SizeOf(typeof(T))*data.Count();
             UIntPtr size = new UIntPtr((uint)sizes);
 
-            //CL.EnqueueWriteBuffer(commandQueue,buffer,true,UIntPtr.Zero,size,new IntPtr(data.to),null,out event0);
+            //CL.EnqueueWriteBuffer(commandQueue,buffer,true,UIntPtr.Zero,size,new IntPtr(&data),null,out event0);
 
             CL.EnqueueWriteBuffer<T>(
                 commandQueue,
@@ -169,13 +170,10 @@ namespace OPENCL {
             UIntPtr[] global = new UIntPtr[dim];
             global[0] = new UIntPtr((uint)count);
 
-            
-            
             UIntPtr[] local = new UIntPtr[1];
             int local_work = count;
 
-            local[0] = new UIntPtr((uint)count);
-            
+            local[0] = new UIntPtr((uint)local_work);            
             
             CLResultCode err;
             err = CL.EnqueueNDRangeKernel(
@@ -184,7 +182,7 @@ namespace OPENCL {
                 dim,
                 null,
                 global,
-                local,
+                null,
                 0,
                 null,
                 out event0

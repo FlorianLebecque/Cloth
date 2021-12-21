@@ -43,7 +43,6 @@ namespace ClothSimulator{
             Particule moon = new(new Vector3(0f, 110f, 0f), new Vector3(0f, 0f, 100), 500,10f);
             Tissue drape = new Tissue(new Vector3(0f,00f,150f),20,20);
 
-            
             ST.Add(Earth);
             ST.Add(moon);
             Particuls.Add(Earth);
@@ -91,9 +90,7 @@ namespace ClothSimulator{
             
 
             GPU computeGPU = new GPU();
-            IntPtr size_vec3  = new IntPtr(System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3))*Particuls.Count());
-            IntPtr size_float = new IntPtr(sizeof(float)*Particuls.Count());
-
+            
             CLBuffer acceleration_buffer  = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,acceleration);
             CLBuffer velocity_buffer      = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,velocities);
             CLBuffer positions_buffer     = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,positions);
@@ -138,7 +135,6 @@ namespace ClothSimulator{
                         computeGPU.Upload<Vector3>(acceleration_buffer , acceleration);
                         computeGPU.Upload<Vector3>(velocity_buffer      , velocities);
                         computeGPU.Upload<Vector3>(positions_buffer     , positions);
-
 
                         computeGPU.Execute(UpdateVelocity,1,Particuls.Count());
                         computeGPU.Download<Vector3>(velocity_buffer,velocities);

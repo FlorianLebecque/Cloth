@@ -8,10 +8,10 @@ namespace Cloth.classes
     public class ParticuleDrawer{
         
         public static Model model;
-        public static void Draw(Particule_obj[] entities){
+        public static void Draw(Particule_obj[] entities,Raylib_cs.Color[] colors){
             
-            foreach(Particule_obj p in entities){
-                DrawModel(model,p.position,p.radius,Color.BEIGE);
+            for(int i = 0; i < entities.Count();i++){
+                DrawModel(model,entities[i].position,entities[i].radius,colors[i]);
             }
         }
 

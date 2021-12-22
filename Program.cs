@@ -10,6 +10,7 @@ namespace ClothSimulator{
 
         static void Main(string[] args){
 
+#region  RAYLIB
              /*
                 Raylib initialisation
             */
@@ -32,28 +33,9 @@ namespace ClothSimulator{
             SetCameraMode(camera, CAMERA_THIRD_PERSON);
             SetTargetFPS(120);
 
-            /*
-                Space initialisation
-            */
+#endregion
 
-            PhysicSpace ST = new(10f);
-            List<Particule> Particuls = new();
-
-            Particule Earth = new(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50f,0.95f);
-            Particule moon = new(new Vector3(0f, 110f, 0f), new Vector3(0f, -20f, 110), 1000,10f,0.95f);
-            Tissue drape = new Tissue(new Vector3(0f,12f,170f),20,20);
-
-            ST.Add(Earth);
-            ST.Add(moon);
-            Particuls.Add(Earth);
-            Particuls.Add(moon);
-
-
-            foreach(Particule pt in drape.nodes.Values){
-                ST.Add(pt);
-                Particuls.Add(pt);
-            }
-
+#region MODEL_INIT
             /*
                 Model initialisation
             */
@@ -67,63 +49,30 @@ namespace ClothSimulator{
             Vector3 lightPos = new Vector3(0.0f, 0.0f, 0.0f );
             Texture2D texture = LoadTexture("resources/textures/texel_checker.png");
 
-            RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
+            //RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
             //RaylibUtils.Utils.SetMaterialTexture(ref model,0,MATERIAL_MAP_DIFFUSE,ref texture);
-            RaylibUtils.Utils.MeshTangents(ref model);
-            RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
-            RaylibUtils.Utils.SetShaderValue(shader,lightPosLoc,lightPos,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-
-            Matrix4x4[] transforms = new Matrix4x4[Particuls.Count()];
-
+            //RaylibUtils.Utils.MeshTangents(ref model);
+            //RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
+            //RaylibUtils.Utils.SetShaderValue(shader,lightPosLoc,lightPos,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
             Particule.model = model;
 
+#endregion
+
+#region UNIVERS
             /*
-                GPU initialisation
+                Univer initialisation
             */
-            
-            Vector3[] acceleration  = new Vector3[Particuls.Count()];
-            Vector3[] velocities    = new Vector3[Particuls.Count()];
-            Vector3[] positions     = new Vector3[Particuls.Count()];
-            float[] dts = new float[Particuls.Count()];
-
-            
-            GPU computeGPU = new GPU();
-            
-            CLBuffer acceleration_buffer  = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,acceleration);
-            CLBuffer velocity_buffer      = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,velocities);
-            CLBuffer positions_buffer     = computeGPU.CreateBuffer<Vector3>(MemoryFlags.ReadWrite ,positions);
-            CLBuffer dt_buffer            = computeGPU.CreateBuffer<float>(MemoryFlags.ReadOnly  ,dts);
-
-            //CLBuffer Particule_buffer     = computeGPU.CreateBuffer<PhysicDataObject>(MemoryFlags.ReadWrite,Particuls.ToArray());
-
-            CLKernel UpdateVelocity = computeGPU.CreateKernel("OpenCl/velocity.cl","UpdateVelocity");
-            CLKernel updatePosition = computeGPU.CreateKernel("OpenCl/position.cl","UpdatePosition");
-
-            computeGPU.SetKernelArg(UpdateVelocity,0,velocity_buffer);
-            computeGPU.SetKernelArg(UpdateVelocity,1,acceleration_buffer);
-            computeGPU.SetKernelArg(UpdateVelocity,2,dt_buffer);
-
-            computeGPU.SetKernelArg(updatePosition,0,positions_buffer);
-            computeGPU.SetKernelArg(updatePosition,1,velocity_buffer);
-            computeGPU.SetKernelArg(updatePosition,2,dt_buffer);
-
-            dts = (from i in Enumerable.Range(0, Particuls.Count()) select 0.01f).ToArray();
-
-            computeGPU.Upload<float>(dt_buffer, dts);
-            
-
-
-
+            ParticuleDrawer.model = model;
             Random rnd = new Random();
             List<Particule_obj> entities = new List<Particule_obj>();
 
             entities.Add(new Particule_obj(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50f,0.95f));
             entities.Add(new Particule_obj(new Vector3(0f, 110f, 0f), new Vector3(0f, -20f, 0), 1000,10f,0.95f));
 
-            for(int i = 0; i < 5000; i++){
+            for(int i = 0; i < 6400; i++){
                 entities.Add(new Particule_obj(
                     new Vector3(rnd.Next(-1000,1000),rnd.Next(-1000,1000),rnd.Next(-1000,1000)),
-                    new Vector3(rnd.Next(-10,10),rnd.Next(-10,10),rnd.Next(-10,10)),
+                    new Vector3(rnd.Next(-100,100),rnd.Next(-100,100),rnd.Next(-100,100)),
                     rnd.Next(1,10),
                     rnd.Next(1,10),
                     0.9f
@@ -133,6 +82,19 @@ namespace ClothSimulator{
             Particule_obj[] output_enties = new Particule_obj[entities.Count()];
             output_enties = entities.ToArray();
 
+            Raylib_cs.Color[] colorArray = new Raylib_cs.Color[entities.Count()];
+            for(int i = 0; i < entities.Count();i++){
+                colorArray[i] = new Raylib_cs.Color(GetRandomValue(100,255),GetRandomValue(100,255),GetRandomValue(100,255),255);
+            }
+
+#endregion
+
+#region GPU_INIT
+            /*
+                GPU initialisation
+            */
+            
+            GPU computeGPU = new GPU();
             CLBuffer B1 = computeGPU.CreateBuffer<Particule_obj>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B2 = computeGPU.CreateBuffer<Particule_obj>(MemoryFlags.ReadWrite,entities.ToArray());
 
@@ -154,56 +116,20 @@ namespace ClothSimulator{
             computeGPU.SetKernelArg(collision_applier,1,B2);
 
             computeGPU.Upload<Particule_obj>(B1,entities.ToArray());
+#endregion
 
-
-            ParticuleDrawer.model = model;
 
             /*
                 Main loop
             */
-            bool use_gpu = true;
             while (!WindowShouldClose()) {
                 //Console.WriteLine(GetFrameTime());
 
                 UpdateCamera(ref camera);
 
-                camera.target = Earth.position;
+                camera.target = output_enties[0].position;
 
                 if(IsKeyDown(KEY_RIGHT)){
-                    ST.UpdateForce();
-                    drape.UpdateForce();
-
-                    if(use_gpu){
-
-                        acceleration = ST.SpaceObjects.Select(p => (p.acceleration)).ToArray();
-                        velocities   = ST.SpaceObjects.Select(p => (p.velocity)).ToArray();
-                        positions    = ST.SpaceObjects.Select(p => (p.position)).ToArray();
-
-                        computeGPU.Upload<Vector3>(acceleration_buffer , acceleration);
-                        computeGPU.Upload<Vector3>(velocity_buffer      , velocities);
-                        computeGPU.Upload<Vector3>(positions_buffer     , positions);
-
-                        computeGPU.Execute(UpdateVelocity,1,Particuls.Count());
-                        computeGPU.Download<Vector3>(velocity_buffer,velocities);
-
-                        computeGPU.Execute(updatePosition,1,Particuls.Count());
-                        computeGPU.Download<Vector3>(positions_buffer,positions);
-
-
-                        for(int i = 0; i < Particuls.Count();i++){
-                            Particuls[i].velocity = velocities[i];
-                            Particuls[i].position = positions[i];
-                        }
-
-                    }else{
-                        ST.UpdateVelocity();
-                        ST.UpdatePosition();
-                    }                    
-
-                    ST.CheckCollision();
-                    ST.ClearForce();
-                }else if(IsKeyDown(KEY_UP)){
-
 
                     computeGPU.Execute(gravity_applier ,1,entities.Count());
 
@@ -230,15 +156,8 @@ namespace ClothSimulator{
                     ClearBackground(BLACK);
 
                     BeginMode3D(camera);
-                        //drape.Draw();    
 
-                        ParticuleDrawer.Draw(output_enties);
-
-                        for(int i = 0;i < Particuls.Count();i++){
-                            
-                            //Particuls[i].Draw();
-                            //model.transform = transforms[i];
-                        }
+                        ParticuleDrawer.Draw(output_enties,colorArray);
 
                         DrawGrid(100, 10.0f);
                     EndMode3D();

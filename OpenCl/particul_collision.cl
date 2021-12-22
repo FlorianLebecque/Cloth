@@ -16,8 +16,6 @@ struct Particule_obj{
     
 };
 
-
-
 float V3Length(struct Vector3 V1){
     return sqrt((V1.X*V1.X)+(V1.Y*V1.Y)+(V1.Z*V1.Z));
 }

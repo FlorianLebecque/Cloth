@@ -122,12 +122,30 @@ namespace ClothSimulator{
             /*
                 Main loop
             */
+
+            int current_view = 0;
+
             while (!WindowShouldClose()) {
                 //Console.WriteLine(GetFrameTime());
 
-                UpdateCamera(ref camera);
+                UpdateCamera(ref camera);                
 
-                camera.target = output_enties[0].position;
+                if(IsKeyPressed(KEY_UP)){
+                    current_view--;
+                }
+                if(IsKeyPressed(KEY_DOWN)){
+                    current_view++;
+                }
+
+                if(current_view < 0) {
+                    current_view = entities.Count()-1;
+                }
+
+                if(current_view == entities.Count()){
+                    current_view = 0;
+                }
+
+                camera.target = output_enties[current_view].position;
 
                 if(IsKeyDown(KEY_RIGHT)){
 
@@ -163,6 +181,7 @@ namespace ClothSimulator{
                     EndMode3D();
 
                     DrawFPS(10, 10);
+                    DrawText(current_view.ToString(),10,50,20,Color.DARKGREEN);
 
                 EndDrawing();
             }

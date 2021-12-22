@@ -11,7 +11,6 @@ namespace Cloth.classes
         
         public float G { get; set; }
         float div = 2;
-        float damping = 0.9f;
         float cur_dt = 0.01f;
         
         public PhysicSpace(float G_){
@@ -73,8 +72,10 @@ namespace Cloth.classes
                             Vector3 Normal = Vector3.Normalize(so2.position - so1.position);  //V1 -> V2
                             Vector3 ExitVector = Normal * ((so1.radius+so2.radius)-distance); //V1 -> V2
 
-                            float ViSO1 = Vector3.Dot(so1.velocity,Normal) * damping;
-                            float ViSO2 = Vector3.Dot(so2.velocity,Normal) * damping;
+                            float bounciness = (so1.bounciness + so2.bounciness)/2;
+
+                            float ViSO1 = Vector3.Dot(so1.velocity,Normal) * bounciness;
+                            float ViSO2 = Vector3.Dot(so2.velocity,Normal) * bounciness;
                             
                             so1.velocity -= Normal * ViSO1;
                             so2.velocity -= Normal * ViSO2;

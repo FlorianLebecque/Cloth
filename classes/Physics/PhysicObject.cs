@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 
 namespace Cloth.classes
 {
-    public class PhysicObject : PhysicDataObject{
+    public class PhysicObject:PhysicDataObject{
         
 
-        public PhysicObject(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_):base(pos_,vel_,mass_,radius_){
 
+
+        public PhysicObject(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounciness_):base(pos_,vel_,mass_,radius_,bounciness_){
+            
         }
 
         public void UpdateVelocity(float dt){

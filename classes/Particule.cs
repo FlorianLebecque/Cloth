@@ -9,7 +9,7 @@ namespace Cloth.classes{
 
         public static Model model;
         
-        public Particule(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_):base(pos_,vel_,mass_,radius_){
+        public Particule(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounciness_):base(pos_,vel_,mass_,radius_,bounciness_){
             cl = new Raylib_cs.Color(GetRandomValue(100,255),GetRandomValue(100,255),GetRandomValue(100,255),255);
 
         }

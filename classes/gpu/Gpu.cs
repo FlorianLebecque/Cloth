@@ -195,8 +195,11 @@ namespace OPENCL {
             CL.Finish(commandQueue);
         }
 
-        public void Download<T>(CLBuffer buffer,T[] ouput) where T:unmanaged{
-            CL.EnqueueReadBuffer(commandQueue, buffer, true, UIntPtr.Zero, ouput, null, out event0);
+        public unsafe void Download<T>(CLBuffer buffer,T[] output) where T:unmanaged{
+            
+            fixed (T* pointer = output)
+                CL.EnqueueReadBuffer(commandQueue, buffer, true, UIntPtr.Zero, (UIntPtr) (ulong) (output.Length * Marshal.SizeOf<T>()), (IntPtr) (void*) pointer, 0U, null, out _);
+            
         }
         
         public void End(){

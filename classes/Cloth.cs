@@ -8,8 +8,8 @@ namespace Cloth.classes {
         public Dictionary<String,Particule> nodes;
         public Dictionary<String,List<Spring>> links;
 
-        public float K = 150000f;
-        public float cd = 0.05f;
+        public float K = 150f;
+        public float cd = 2f;
 
         private float rest_distance = 3f;
         private Vector3 starting_pos; 
@@ -29,8 +29,9 @@ namespace Cloth.classes {
                     Particule pt = new Particule(
                         new Vector3(start_pos_x+i*rest_distance,starting_pos.Y,start_pos_z+j*rest_distance),
                         new Vector3(0),
-                        0.1f,
-                        1f
+                        0.2f,
+                        rest_distance/4f,
+                        0.01f
                     );
 
                     String key = String.Format("{0}-{1}",i,j);
@@ -70,7 +71,7 @@ namespace Cloth.classes {
                 potential_links.Add(String.Format("{0}-{1}",i,j - 1));  //  up
                 potential_links.Add(String.Format("{0}-{1}",i,j + 1));  //  down
 
-                AddLink(correct_links,current,pt_key,potential_links,200f);
+                AddLink(correct_links,current,pt_key,potential_links,500f);
                 potential_links.Clear();
 
                     //double link
@@ -79,7 +80,7 @@ namespace Cloth.classes {
                 potential_links.Add(String.Format("{0}-{1}",i,j - 2));  //  up
                 potential_links.Add(String.Format("{0}-{1}",i,j + 2));  //  down
                 
-                AddLink(correct_links,current,pt_key,potential_links,100f);
+                AddLink(correct_links,current,pt_key,potential_links,500f);
                 potential_links.Clear();
 
                 links.Add(pt_key,correct_links);
@@ -115,18 +116,25 @@ namespace Cloth.classes {
                 foreach(Spring sp in springs){
                     Particule pt2 = nodes[sp.key];
 
-                    Vector3 Hooks_force = new Vector3(0);   // F_h = k * d
-                    Vector3 Armts_force = new Vector3(0);   // f_a = -Cd * V
+                    Vector3 Hooks_force;   // F_h = k * d
+                    Vector3 Armts_force;   // f_a = -Cd * V
 
                     float dist = Vector3.Distance(pt2.position,pt1.position);
                     float dl = dist-sp.distance;
 
                     Vector3 normal = Vector3.Normalize(pt2.position - pt1.position);
 
-                    float in_direction_velocity = Vector3.Dot(normal,pt1.velocity);
+                    float in_direction_velocity = Vector3.Dot(normal,pt2.velocity-pt1.velocity);
 
-                    Hooks_force =  normal * (dl*(sp.k/2));
-                    Armts_force = -normal * in_direction_velocity * cd;
+                    float spring_force = (dl*(sp.k/2));
+                    float damping_force = in_direction_velocity * cd;
+
+                    
+
+                    Hooks_force =  normal * spring_force;
+                    Armts_force = normal * damping_force;
+
+                    
 
                     pt1.AddForce(Hooks_force);
                     pt1.AddForce(Armts_force);

@@ -12,8 +12,7 @@ struct Particule_obj{
     float mass;
     float bounciness;
     float radius;
-
-    
+    float roughness;
 };
 
 

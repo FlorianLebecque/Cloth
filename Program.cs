@@ -66,18 +66,26 @@ namespace ClothSimulator{
             Random rnd = new Random();
             List<Particule_obj> entities = new List<Particule_obj>();
 
-            entities.Add(new Particule_obj(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50f,0.95f));
-            entities.Add(new Particule_obj(new Vector3(0f, 110f, 0f), new Vector3(0f, -20f, 0), 1000,10f,0.95f));
+            entities.Add(new Particule_obj(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50f,0.55f,0.1f));
+            entities.Add(new Particule_obj(new Vector3(0f, 150, 0f), new Vector3(0f, 0f, 100), 500,15,0.95f,0.1f));
+            entities.Add(new Particule_obj(new Vector3(500, 0f, 0f), new Vector3(0f, 0f, 50), 1000,25f,0.95f,0.1f));
 
-            for(int i = 0; i < 6400; i++){
+            Tissue drape = new Tissue(new Vector3(0,2,300),50,50,entities);
+            Spring_force[] spring_forces = new Spring_force[drape.springs.Count()];
+            
+            
+            for(int i = 0; i < 500; i++){
                 entities.Add(new Particule_obj(
-                    new Vector3(rnd.Next(-1000,1000),rnd.Next(-1000,1000),rnd.Next(-1000,1000)),
-                    new Vector3(rnd.Next(-100,100),rnd.Next(-100,100),rnd.Next(-100,100)),
+                    new Vector3(rnd.Next(-500,500),rnd.Next(-500,500),rnd.Next(-500,500)),
+                    new Vector3(rnd.Next(-50,50),rnd.Next(-50,50),rnd.Next(-50,50)),
                     rnd.Next(1,10),
                     rnd.Next(1,10),
-                    0.9f
+                    0.9f,
+                    (float)rnd.NextDouble()
                 ));
             }
+            
+
 
             Particule_obj[] output_enties = new Particule_obj[entities.Count()];
             output_enties = entities.ToArray();
@@ -97,11 +105,16 @@ namespace ClothSimulator{
             GPU computeGPU = new GPU();
             CLBuffer B1 = computeGPU.CreateBuffer<Particule_obj>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B2 = computeGPU.CreateBuffer<Particule_obj>(MemoryFlags.ReadWrite,entities.ToArray());
+            CLBuffer BSpring = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape.springs.ToArray());
+            CLBuffer BSpringF = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,spring_forces);
+            CLBuffer BCloth = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape.settings});
 
             CLKernel gravity_applier   = computeGPU.CreateKernel("OpenCl/particul_gravity.cl","ComputeGravity");
             CLKernel velocity_applier  = computeGPU.CreateKernel("OpenCl/particul_velocity.cl","ComputeVelocity");
             CLKernel position_applier  = computeGPU.CreateKernel("OpenCl/particul_position.cl","ComputePosition");
             CLKernel collision_applier = computeGPU.CreateKernel("OpenCl/particul_collision.cl","ComputeCollision");
+            CLKernel springs_applier = computeGPU.CreateKernel("OpenCl/particul_spring.cl","ComputeSpring");
+            CLKernel springsF_applier = computeGPU.CreateKernel("OpenCl/spring_applier.cl","ComputeSpringForce");
 
             computeGPU.SetKernelArg(gravity_applier,0,B1);
             computeGPU.SetKernelArg(gravity_applier,1,B2);
@@ -115,7 +128,18 @@ namespace ClothSimulator{
             computeGPU.SetKernelArg(collision_applier,0,B1);
             computeGPU.SetKernelArg(collision_applier,1,B2);
 
+            computeGPU.SetKernelArg(springs_applier,0,B1);
+            computeGPU.SetKernelArg(springs_applier,1,BSpring);
+            computeGPU.SetKernelArg(springs_applier,2,BSpringF);
+
+            computeGPU.SetKernelArg(springsF_applier,0,B1);
+            computeGPU.SetKernelArg(springsF_applier,1,B2);
+            computeGPU.SetKernelArg(springsF_applier,2,BSpringF);
+            computeGPU.SetKernelArg(springsF_applier,3,BCloth);
+
             computeGPU.Upload<Particule_obj>(B1,entities.ToArray());
+            computeGPU.Upload<Spring>(BSpring,drape.springs.ToArray());
+            computeGPU.Upload<Cloth_settings>(BCloth,new Cloth_settings[1]{drape.settings});
 #endregion
 
 
@@ -124,11 +148,15 @@ namespace ClothSimulator{
             */
 
             int current_view = 0;
-
+            bool showgrid = false;
             while (!WindowShouldClose()) {
                 //Console.WriteLine(GetFrameTime());
 
                 UpdateCamera(ref camera);                
+
+                if(IsKeyPressed(KEY_LEFT)){
+                    showgrid = !showgrid;
+                }
 
                 if(IsKeyPressed(KEY_UP)){
                     current_view--;
@@ -153,7 +181,14 @@ namespace ClothSimulator{
 
                     computeGPU.Download<Particule_obj>(B2,output_enties);
                     computeGPU.Upload<Particule_obj>(B1,output_enties);
-                    
+
+                    computeGPU.Execute(springs_applier,1,drape.springs.Count());
+
+                    computeGPU.Execute(springsF_applier,1,drape.settings.count);
+
+                    computeGPU.Download<Particule_obj>(B2,output_enties);
+                    computeGPU.Upload<Particule_obj>(B1,output_enties);
+
                     computeGPU.Execute(velocity_applier,1,entities.Count());
 
                     computeGPU.Download<Particule_obj>(B2,output_enties);
@@ -176,8 +211,8 @@ namespace ClothSimulator{
                     BeginMode3D(camera);
 
                         ParticuleDrawer.Draw(output_enties,colorArray);
-
-                        DrawGrid(100, 10.0f);
+                        if(showgrid)
+                            DrawGrid(100, 10.0f);
                     EndMode3D();
 
                     DrawFPS(10, 10);

@@ -25,12 +25,13 @@ namespace Cloth.classes
 
     public struct Particule_obj{
 
-        public Particule_obj(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounc_){
+        public Particule_obj(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounc_,float r_){
             position = pos_;
             velocity = vel_;
             mass     = mass_;
             radius   = radius_;
             bounciness = bounc_;
+            roughness = r_;
             acceleration = new Vector3();
         }
         public Vector3 position { get; set; }
@@ -39,5 +40,7 @@ namespace Cloth.classes
         public float mass { get; set; }
         public float bounciness { get; set; }
         public float radius {get; set; }
+
+        public float roughness {get;set;}
     }
 }

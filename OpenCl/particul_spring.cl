@@ -15,7 +15,20 @@ struct Particule_obj{
     float roughness;
 };
 
+struct Spring{
+    float rest_distance;
+    float k;
+    float cd;
 
+    int particul_1;
+    int particul_2;
+};
+
+struct Spring_force{
+    int p1;
+    int p2;
+    struct Vector3 force;
+};
 
 float V3Length(struct Vector3 V1){
     return sqrt((V1.X*V1.X)+(V1.Y*V1.Y)+(V1.Z*V1.Z));
@@ -65,6 +78,10 @@ float V3Distance(struct Vector3 V1,struct Vector3 V2){
     return V3Length(V3Sub(V1,V2));
 }
 
+float V3Dot(struct Vector3 V1, struct Vector3 V2){
+    return (V1.X * V2.X) + (V1.Y * V2.Y) + (V1.Z * V2.Z);
+}
+
 struct Vector3 V3Normalize(struct Vector3 V1){
     struct Vector3 resutl;
     float l = V3Length(V1);
@@ -74,30 +91,28 @@ struct Vector3 V3Normalize(struct Vector3 V1){
     return resutl;
 }
 
-__kernel void ComputeGravity(__global struct Particule_obj *input, __global struct Particule_obj *output){
-    int total = get_global_size(0);
+__kernel void ComputeSpring(__global struct Particule_obj *input,__global struct Spring *springs, __global struct Spring_force *sp){
+    
 	int index = get_global_id(0);
 
-    struct Vector3 force;
-    force.X = 0;
-    force.Y = 0;
-    force.Z = 0;
+    int i_p1 = springs[index].particul_1;
+    int i_p2 = springs[index].particul_2;
 
-    output[index] = input[index];
+    float dist = V3Distance(input[i_p2].position,input[i_p1].position);
+    float dl = dist - springs[index].rest_distance;
 
-    for(int i = 0; i < total;i++){
+    struct Vector3 normal = V3Normalize(V3Sub(input[i_p2].position,input[i_p1].position));
 
-        if(i != index){
-            float dist = V3Distance(input[index].position,input[i].position);
-            struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
+    float in_direction_velocity_1 = V3Dot(normal,V3Sub(input[i_p2].velocity,input[i_p1].velocity));
 
-            float force_value = 10 * (input[i].mass * input[index].mass) / (dist*dist);
+    float spring_force  = dl * (springs[index].k/2);
+    float damping_force_1 = in_direction_velocity_1 * springs[index].cd;
 
-            force = V3Add(force,V3fmul(normal,force_value));
-        }
-
-    }
+    struct Vector3 hooks_p1   = V3fmul(normal,spring_force);
+    struct Vector3 damping_p1 = V3fmul(normal,damping_force_1);
 
 
-    output[index].acceleration = V3fdiv(force,input[index].mass);
+    sp[index].force = V3Add(hooks_p1,damping_p1);
+    sp[index].p1 = i_p1;
+    sp[index].p2 = i_p2;
 };

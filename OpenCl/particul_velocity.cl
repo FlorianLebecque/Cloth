@@ -12,10 +12,8 @@ struct Particule_obj{
     float mass;
     float bounciness;
     float radius;
-
-    
+    float roughness;
 };
-
 
 struct Vector3 V3Add(struct Vector3 V1,struct Vector3 V2){
     struct Vector3 resutl;

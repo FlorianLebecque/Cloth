@@ -12,8 +12,7 @@ struct Particule_obj{
     float mass;
     float bounciness;
     float radius;
-
-    
+    float roughness;
 };
 
 float V3Length(struct Vector3 V1){
@@ -101,21 +100,23 @@ __kernel void ComputeCollision(__global struct Particule_obj *input, __global st
                 float ViSO1 = V3Dot(input[index].velocity,normal) * bounciness;
                 float ViSO2 = V3Dot(input[i].velocity,normal) * bounciness;
 
-                output[index].velocity = V3Sub(output[index].velocity,V3fmul(normal,ViSO1));
+                struct Vector3 normalVelocity = V3fmul(normal,ViSO1);
+
+                struct Vector3 tangentVelocty = V3Sub(input[index].velocity,normalVelocity);
+
+                float resitance =  -V3Length(tangentVelocty)*(input[index].roughness);
+
+                struct Vector3 resitanceForce = V3fmul(V3Normalize(tangentVelocty),resitance);
+
+                output[index].velocity = V3Sub(output[index].velocity,normalVelocity);
                 float VfSO1 = ViSO2;
                 if(input[index].mass != input[i].mass){
                     VfSO1 = (((input[index].mass-input[i].mass)/(totalMass))  * ViSO1) + (((2*input[i].mass)/(totalMass))*ViSO2);
                 }
+
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));
-
-
-                //force adjustement
-                float ReactionForceValue = V3Dot(
-                    V3fmul(input[index].acceleration,input[index].mass),
-                    normal
-                );
-                struct Vector3 ReactionForce = V3fmul(normal,-ReactionForceValue);
-                output[index].acceleration = V3Add(output[index].acceleration,V3fdiv(ReactionForce,output[index].mass));
+                output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,0.01));
+                
 
                 //position adjustement
                 output[index].position = V3Sub(output[index].position,V3fmul(ExitVector,(1-totalFactor)));

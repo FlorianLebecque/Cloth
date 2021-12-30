@@ -3,27 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cloth.classes{
-    public class Particule:PhysicObject{
-        public Raylib_cs.Color cl;
+namespace Cloth.classes
+{
+    public struct Particule{
 
-        public static Model model;
-        
-        public Particule(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounciness_):base(pos_,vel_,mass_,radius_,bounciness_){
-            cl = new Raylib_cs.Color(GetRandomValue(100,255),GetRandomValue(100,255),GetRandomValue(100,255),255);
-
+        public Particule(Vector3 pos_,Vector3 vel_ ,float mass_,float radius_,float bounc_,float roughness_){
+            position = pos_;
+            velocity = vel_;
+            mass     = mass_;
+            radius   = radius_;
+            bounciness = bounc_;
+            roughness = roughness_;
+            acceleration = new Vector3();
         }
-        public void Draw(){
-            DrawModel(model,position,radius,cl);
-        }
+        public Vector3 position { get; set; }
+        public Vector3 velocity { get; set; }
+        public Vector3 acceleration {get; set;}
+        public float mass { get; set; }
+        public float bounciness { get; set; }
+        public float radius {get; set; }
 
-        public Matrix4x4 GetTransform(){
-            Matrix4x4 trans = Matrix4x4.CreateTranslation(position);
-            Matrix4x4 scale = Matrix4x4.CreateScale(new Vector3(radius));
-
-            return trans * scale;
-        }
-
-
+        public float roughness {get;set;}
     }
 }

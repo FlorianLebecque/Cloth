@@ -54,9 +54,12 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 struct Vector3 V3fdiv(struct Vector3 V1,float v){
     struct Vector3 resutl;
     
-    resutl.X = V1.X / v;
-    resutl.Y = V1.Y / v;
-    resutl.Z = V1.Z / v;
+    if(v != 0){
+        resutl.X = V1.X / v;
+        resutl.Y = V1.Y / v;
+        resutl.Z = V1.Z / v;
+    }
+    
 
     return resutl;
 }
@@ -68,9 +71,13 @@ float V3Distance(struct Vector3 V1,struct Vector3 V2){
 struct Vector3 V3Normalize(struct Vector3 V1){
     struct Vector3 resutl;
     float l = V3Length(V1);
-    resutl.X = V1.X / l;
-    resutl.Y = V1.Y / l;
-    resutl.Z = V1.Z / l;
+
+    if(l != 0){
+        resutl.X = V1.X / l;
+        resutl.Y = V1.Y / l;
+        resutl.Z = V1.Z / l;
+    }
+    
     return resutl;
 }
 

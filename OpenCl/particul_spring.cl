@@ -17,11 +17,14 @@ struct Particule_obj{
 
 struct Spring{
     float rest_distance;
+    float max_distance;
     float k;
     float cd;
 
     int particul_1;
     int particul_2;
+
+    int broken
 };
 
 struct Spring_force{
@@ -67,9 +70,12 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 struct Vector3 V3fdiv(struct Vector3 V1,float v){
     struct Vector3 resutl;
     
-    resutl.X = V1.X / v;
-    resutl.Y = V1.Y / v;
-    resutl.Z = V1.Z / v;
+    if(v != 0){
+        resutl.X = V1.X / v;
+        resutl.Y = V1.Y / v;
+        resutl.Z = V1.Z / v;
+    }
+    
 
     return resutl;
 }
@@ -85,9 +91,13 @@ float V3Dot(struct Vector3 V1, struct Vector3 V2){
 struct Vector3 V3Normalize(struct Vector3 V1){
     struct Vector3 resutl;
     float l = V3Length(V1);
-    resutl.X = V1.X / l;
-    resutl.Y = V1.Y / l;
-    resutl.Z = V1.Z / l;
+
+    if(l != 0){
+        resutl.X = V1.X / l;
+        resutl.Y = V1.Y / l;
+        resutl.Z = V1.Z / l;
+    }
+    
     return resutl;
 }
 
@@ -99,14 +109,23 @@ __kernel void ComputeSpring(__global struct Particule_obj *input,__global struct
     int i_p2 = springs[index].particul_2;
 
     float dist = V3Distance(input[i_p2].position,input[i_p1].position);
+
+    if (dist > springs[index].max_distance)
+        springs[index].broken = 0;
+
     float dl = dist - springs[index].rest_distance;
 
     struct Vector3 normal = V3Normalize(V3Sub(input[i_p2].position,input[i_p1].position));
 
     float in_direction_velocity_1 = V3Dot(normal,V3Sub(input[i_p2].velocity,input[i_p1].velocity));
 
-    float spring_force  = dl * (springs[index].k/2);
-    float damping_force_1 = in_direction_velocity_1 * springs[index].cd;
+    float spring_force  = dl * (springs[index].k/2) * springs[index].broken;
+
+    float damping_force_1 = in_direction_velocity_1 * springs[index].cd * springs[index].broken;
+
+    if(damping_force_1 > 2*spring_force){
+        damping_force_1 = 2*spring_force;
+    }
 
     struct Vector3 hooks_p1   = V3fmul(normal,spring_force);
     struct Vector3 damping_p1 = V3fmul(normal,damping_force_1);

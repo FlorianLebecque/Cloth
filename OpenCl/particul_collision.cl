@@ -52,9 +52,12 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 struct Vector3 V3fdiv(struct Vector3 V1,float v){
     struct Vector3 resutl;
     
-    resutl.X = V1.X / v;
-    resutl.Y = V1.Y / v;
-    resutl.Z = V1.Z / v;
+    if(v != 0){
+        resutl.X = V1.X / v;
+        resutl.Y = V1.Y / v;
+        resutl.Z = V1.Z / v;
+    }
+    
 
     return resutl;
 }
@@ -70,9 +73,13 @@ float V3Dot(struct Vector3 V1, struct Vector3 V2){
 struct Vector3 V3Normalize(struct Vector3 V1){
     struct Vector3 resutl;
     float l = V3Length(V1);
-    resutl.X = V1.X / l;
-    resutl.Y = V1.Y / l;
-    resutl.Z = V1.Z / l;
+
+    if(l != 0){
+        resutl.X = V1.X / l;
+        resutl.Y = V1.Y / l;
+        resutl.Z = V1.Z / l;
+    }
+    
     return resutl;
 }
 
@@ -96,17 +103,20 @@ __kernel void ComputeCollision(__global struct Particule_obj *input, __global st
                 struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
                 struct Vector3 ExitVector = V3fmul(normal,((input[index].radius+input[i].radius)-dist));
 
+                struct Vector3 VELn = V3fmul(normal,V3Dot(normal,input[index].velocity));
+                struct Vector3 VELt = V3Sub(input[index].velocity,VELn);
+
                 //speed adjustement
-                float ViSO1 = V3Dot(input[index].velocity,normal) * bounciness;
+                float ViSO1 = V3Dot(normal,input[index].velocity) * bounciness;
                 float ViSO2 = V3Dot(input[i].velocity,normal) * bounciness;
 
                 struct Vector3 normalVelocity = V3fmul(normal,ViSO1);
 
-                struct Vector3 tangentVelocty = V3Sub(input[index].velocity,normalVelocity);
 
-                float resitance =  -V3Length(tangentVelocty)*(input[index].roughness);
 
-                struct Vector3 resitanceForce = V3fmul(V3Normalize(tangentVelocty),resitance);
+
+                float resitance =  -V3Length(VELt)*(input[index].roughness);
+                struct Vector3 resitanceForce = V3fmul(V3Normalize(VELt),resitance);
 
                 output[index].velocity = V3Sub(output[index].velocity,normalVelocity);
                 float VfSO1 = ViSO2;

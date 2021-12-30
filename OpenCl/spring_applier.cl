@@ -15,14 +15,6 @@ struct Particule_obj{
     float roughness;
 };
 
-struct Spring{
-    float rest_distance;
-    float k;
-    float cd;
-
-    int particul_1;
-    int particul_2;
-};
 
 struct Spring_force{
     int p1;
@@ -69,9 +61,12 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 struct Vector3 V3fdiv(struct Vector3 V1,float v){
     struct Vector3 resutl;
     
-    resutl.X = V1.X / v;
-    resutl.Y = V1.Y / v;
-    resutl.Z = V1.Z / v;
+    if(v != 0){
+        resutl.X = V1.X / v;
+        resutl.Y = V1.Y / v;
+        resutl.Z = V1.Z / v;
+    }
+    
 
     return resutl;
 }

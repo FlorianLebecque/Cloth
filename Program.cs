@@ -16,6 +16,115 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
+/*
+
+    ---------------------------------------------------------------------------------------------
+
+            Gravity and cloth simulation
+
+        Force simulated :
+            Gravity
+            Springs with directional dampening
+            Bouncing
+            Resitance
+
+        Simulation :
+
+            Initialisation phase :
+                1) Raylib
+                2) 3D Model
+                3) Univers
+                4) GPU
+
+            Main loop:
+
+                1) Simulation
+                    1) Gravity for every particule
+                    2) Spring Forces for every springs
+                    3) Apply spring forces on the particule
+                    4) Update velocity for each particule
+                    5) Update position for each particule
+                    6) check collision for every particule
+
+                    We download and send the data to the GPU between every action
+
+                2) Display
+
+                    1) Draw the spings
+                    2) Draw the particule
+
+                    to draw the particule we take the array of particule and the array of color
+                    They are the same length and particule[i] -> color[i]
+
+        CONTROLE
+
+            [SPACE]                     -> start the simulation
+            [LEFT]                      -> Display debug
+            [UP] or [DOWN]              -> Change targeted particule
+            [KEY PAD +] or [KEY PAD -]  -> Slow or accelerate the simulation (When accelerated -> can be unstable)
+
+
+        OPENCL
+            The Object GPU is an interface to communicate with the gpu
+            All the kernel are in the opencl folder
+
+            I had to reimplement a bunch of basic vector function because I am using Vector3 witch is from C# and differ from float3 in OpenCl
+
+            Kernel :
+                [particule_gravity]     :   Compute the gravity for each particule
+                    0 : Univer struct
+                    1 : Input buffer (array of particule)
+                    2 : Output buffer (array of particuke)
+
+                    exectuted once for each particule
+
+                [particul_spring]       :   Compute the force for each springs
+                    0 : Input buffer (array of particule)
+                    1 : springs -> array containing all the springs
+                    2 : sp -> array of springs_force
+
+                    exectuted once for every springs
+
+                [spring_applier]        :   Apply the force to each particule of the cloth
+                    0 : Input buffer (array of particule)
+                    1 : Output buffer (array of particule)
+                    2 : sp -> array of springs_force
+                    3 : cloth -> array of one element -> the cloth settings
+
+                    Since all the cloth particule are in the same buffer as all the other particule
+                    We need to know where they are in the array
+                        -> offset : tells where the index start
+                        -> count  : tells how many particule they are in the array
+
+                    ex : [p,p,p,p,p,c,c,c,c,c,c,p,p];
+                        -> offset 5
+                        -> count  6
+
+                        We know the cloth is from index 5 to index 10
+                    
+                    Executed once for every particule in the cloth
+
+                [particule_velocity]    :   Apply the acceleration to the velocity
+                [particule_position]    :   Apply the velocity to the position
+                    0 : Univers (array of one element) contain the univer parameter G and dt
+                    1 : Input (array of all the particules)
+                    2 : Ouput (array of all the particules)
+
+                    They both are exectuted once per particule
+
+                [particul_collision]    :   Compute collision and adjust velocity and position
+                    0 : Univers (array of one element) contain the univer parameter G and dt
+                    1 : Input (array of all the particuls)
+                    2 : Ouput (array of all the particuls)
+
+                    Executed once for every particules
+
+        The simulation works by sending an array of Particule to the GPU and do the calculation on it
+                    We then download the array and display it
+    ---------------------------------------------------------------------------------------------
+*/
+
+
 namespace ClothSimulator{
 
     class Program{
@@ -25,11 +134,6 @@ namespace ClothSimulator{
 
             const int ScreenWidth = 1920;
             const int ScreenHeight = 1080;
-
-            //using(SimulationWindows sw = new SimulationWindows(ScreenWidth,ScreenHeight,"Gravity")){
-            //    sw.Run();
-            //}
-
 
 #region  RAYLIB
             /*
@@ -81,32 +185,43 @@ namespace ClothSimulator{
 
 #region UNIVERS
             /*
-                Univer initialisation
+                ---------------------------------------------------------------------------------------------
+                        Univer initialisation
+
+                    The univer object is a struct containing the univers properties
+                        - G
+                        - dt
+
+                    
+
+                ---------------------------------------------------------------------------------------------
             */
 
             Univers univers = new Univers(10f,0.01f);
-
 
             ParticuleDrawer.model = model;
             Random rnd = new Random();
             List<Particule> entities = new List<Particule>();
             List<Raylib_cs.Color> colors = new List<Color>();
 
-            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,75,1.1f,0.0f));
-            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250f, 0f, 0), 100000,50f,1f,0.0f));
+            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,75,1.1f,0.0f));           //sun
+            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250f, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
 
-            entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));
-            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0f, 0f, 75), 500,15,0.6f,0.01f));
+            entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));        //first planet (colide with tissue)
+            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0f, 0f, 75), 500,15,0.6f,0.01f));        //seconde planet useless
 
+                //color for each Particule (Sun 1 , sun 2, planet 1 and 2)
             colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-
-            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,entities,colors);
-            Spring_force[] spring_forces = new Spring_force[drape.springs.Count()];
+                
+            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,entities,colors);      //fill the entities array with all the tissue particule
+            Spring_force[] spring_forces = new Spring_force[drape.springs.Count()];     //create an array for each springs
             
+
+                //generation of a ring of particule arround the first sun
             Vector3 up = new Vector3(0,1,0);        
             for(int i = 0; i < 1500; i++){
 
@@ -135,10 +250,9 @@ namespace ClothSimulator{
                 colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
             }
             
-
-            Particule[] output_enties = new Particule[entities.Count()];
-            output_enties = entities.ToArray();
-
+                //get an array of particule
+            Particule[] output_enties = entities.ToArray();
+                //get an array of colors
             Raylib_cs.Color[] colorArray = colors.ToArray();
 
 
@@ -218,6 +332,7 @@ namespace ClothSimulator{
 
                 UpdateCamera(ref camera);                
 
+#region CONTROL
                 if(IsKeyPressed(KEY_LEFT)){
                     showgrid = !showgrid;
                 }
@@ -264,7 +379,9 @@ namespace ClothSimulator{
                 }
 
                 camera.target = output_enties[current_view].position;
-
+#endregion
+                
+#region SIMULATION                
                 if(started){
 
                     computeGPU.Execute(gravity_applier ,1,entities.Count());     
@@ -295,22 +412,22 @@ namespace ClothSimulator{
                     computeGPU.Upload<Particule>(B1,output_enties);
                 }
                 
-
+#endregion
 
                 BeginDrawing();
                     ClearBackground(BLACK);
 
                     BeginMode3D(camera);
-                        ParticuleDrawer.DrawSprings(output_enties,drape);
-                        ParticuleDrawer.Draw(output_enties,colorArray);
+                        ParticuleDrawer.DrawSprings(output_enties,drape);   //draw all springs
+                        ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
 
+                        //debug
                         if(showgrid){
                             DrawGrid(100, 10.0f);
 
+                            //draw velocity and acceleration vector for selected particule
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.RED);
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].acceleration,Vector3.Normalize(output_enties[current_view].acceleration) * output_enties[current_view].radius)),Color.ORANGE);
-
-
                         }
                     EndMode3D();
 

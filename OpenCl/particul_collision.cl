@@ -116,9 +116,6 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
 
                 struct Vector3 normalVelocity = V3fmul(normal,ViSO1);
 
-
-
-
                 float resitance =  -V3Length(VELt)*(input[index].roughness);
                 struct Vector3 resitanceForce = V3fmul(V3Normalize(VELt),resitance);
 

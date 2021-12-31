@@ -83,15 +83,13 @@ namespace ClothSimulator{
                         - G
                         - dt
 
-                    
-
                 ---------------------------------------------------------------------------------------------
             */
 
             Univers univers = new Univers(10f,0.01f);
 
             ParticuleDrawer.model = model;
-            Random rnd = new Random();
+            Random rnd = new Random(2);
             List<Particule> entities = new List<Particule>();
             List<Raylib_cs.Color> colors = new List<Color>();
 
@@ -99,7 +97,7 @@ namespace ClothSimulator{
             entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250f, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
 
             entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));        //first planet (colide with tissue)
-            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0f, 0f, 75), 500,15,0.6f,0.01f));        //seconde planet useless
+            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f));        //seconde planet useless
 
                 //color for each Particule (Sun 1 , sun 2, planet 1 and 2)
             colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
@@ -311,7 +309,7 @@ namespace ClothSimulator{
 
                         //debug
                         if(showgrid){
-                            DrawGrid(100, 10.0f);
+                            DrawGrid(100, 50.0f);
 
                             //draw velocity and acceleration vector for selected particule
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.RED);

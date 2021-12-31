@@ -20,6 +20,11 @@ namespace ClothSimulator{
 
     class Program{
 
+        static float V3Length(Vector3 v){
+            
+            return (float)Math.Sqrt((v.X*v.X)+(v.Y*v.Y)+(v.Z*v.Z));
+        }
+
         static void Main(string[] args){
 
 
@@ -212,9 +217,15 @@ namespace ClothSimulator{
                 Main loop
             */
 
+            
+
             bool started = false;   // tells if the simulation is started
             int current_view = 0;   // tells witch particule the camera follow
             bool showgrid = false;  // debug info
+
+            Vector3 CamTarget = new Vector3(entities[0].position.X,entities[0].position.Y,entities[0].position.Z);
+            Vector3 CamObj = output_enties[current_view].position;
+
             while (!WindowShouldClose()) {
 
                 UpdateCamera(ref camera);                
@@ -264,7 +275,16 @@ namespace ClothSimulator{
                     started = true;
                 }
 
-                camera.target = output_enties[current_view].position;
+                CamObj = output_enties[current_view].position;
+                Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
+                float speed =  (CamObj-CamTarget).Length()/8;
+
+                if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=1)){
+                    CamTarget += dir*speed;
+                }
+
+
+                camera.target = CamTarget;
 #endregion
                 
 #region SIMULATION                

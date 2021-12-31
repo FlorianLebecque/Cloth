@@ -57,7 +57,7 @@ namespace OPENCL {
 
         private CLCommandQueue InitCommandQueue(CLContext Gpu_context,CLDevice Gpu_1){
             CLResultCode errorCode;
-            CLCommandQueue commandQueue = CL.CreateCommandQueue(Gpu_context, Gpu_1, (CommandQueueProperty)0, out errorCode);
+            CLCommandQueue commandQueue = CL.CreateCommandQueueWithProperties(Gpu_context,Gpu_1,new IntPtr(0),out errorCode);
             if (errorCode != CLResultCode.Success) {
                 throw new Exception("Impossible de créer la liste de traitement");
             }

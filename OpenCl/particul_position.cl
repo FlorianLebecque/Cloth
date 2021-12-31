@@ -4,6 +4,10 @@ struct Vector3{
 	float Z;
 };
 
+struct Univers {
+        float G;
+        float dt;
+};
 
 struct Particule_obj{
     struct Vector3 position;
@@ -37,9 +41,9 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 }
 
 
-__kernel void ComputePosition(__global struct Particule_obj *input, __global struct Particule_obj *output){
+__kernel void ComputePosition(__global struct Univers *uni, __global struct Particule_obj *input, __global struct Particule_obj *output){
 
 	int index = get_global_id(0);
 
-    output[index].position = V3Add(input[index].position,V3fmul(input[index].velocity,0.01f));
+    output[index].position = V3Add(input[index].position,V3fmul(input[index].velocity,uni[0].dt));
 };

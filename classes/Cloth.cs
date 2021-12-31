@@ -28,7 +28,7 @@ namespace Cloth.classes {
         public Tissue(Vector3 position,int n,int m,List<Particule> entites,List<Raylib_cs.Color> colors){
 
             rest_distance = 3f;
-            max_distance = 15f*rest_distance;
+            max_distance = 7f*rest_distance;
 
             roughtness = 1f;
 

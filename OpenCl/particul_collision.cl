@@ -4,6 +4,10 @@ struct Vector3{
 	float Z;
 };
 
+struct Univers {
+        float G;
+        float dt;
+};
 
 struct Particule_obj{
     struct Vector3 position;
@@ -83,7 +87,7 @@ struct Vector3 V3Normalize(struct Vector3 V1){
     return resutl;
 }
 
-__kernel void ComputeCollision(__global struct Particule_obj *input, __global struct Particule_obj *output){
+__kernel void ComputeCollision(__global struct Univers *uni,__global struct Particule_obj *input, __global struct Particule_obj *output){
     int total = get_global_size(0);
 	int index = get_global_id(0);
 
@@ -125,7 +129,7 @@ __kernel void ComputeCollision(__global struct Particule_obj *input, __global st
                 }
 
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));
-                output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,0.01));
+                output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,uni[0].dt));
                 
 
                 //position adjustement

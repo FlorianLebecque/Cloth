@@ -4,6 +4,10 @@ struct Vector3{
 	float Z;
 };
 
+struct Univers {
+        float G;
+        float dt;
+};
 
 struct Particule_obj{
     struct Vector3 position;
@@ -81,7 +85,7 @@ struct Vector3 V3Normalize(struct Vector3 V1){
     return resutl;
 }
 
-__kernel void ComputeGravity(__global struct Particule_obj *input, __global struct Particule_obj *output){
+__kernel void ComputeGravity(__global struct Univers *uni,__global struct Particule_obj *input, __global struct Particule_obj *output){
     int total = get_global_size(0);
 	int index = get_global_id(0);
 
@@ -98,13 +102,12 @@ __kernel void ComputeGravity(__global struct Particule_obj *input, __global stru
             float dist = V3Distance(input[index].position,input[i].position);
             struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
 
-            float force_value = 10 * (input[i].mass * input[index].mass) / (dist*dist);
+            float force_value = uni[0].G * (input[i].mass * input[index].mass) / (dist*dist);
 
             force = V3Add(force,V3fmul(normal,force_value));
         }
 
     }
-
-
+    
     output[index].acceleration = V3fdiv(force,input[index].mass);
 };

@@ -32,11 +32,11 @@ namespace ClothSimulator{
 
 
 #region  RAYLIB
-             /*
+            /*
                 Raylib initialisation
             */
 
-            
+
 
             SetConfigFlags(FLAG_MSAA_4X_HINT);
             SetConfigFlags(FLAG_WINDOW_HIGHDPI);
@@ -51,6 +51,7 @@ namespace ClothSimulator{
             camera.projection = CAMERA_PERSPECTIVE;
 
             SetCameraMode(camera, CAMERA_THIRD_PERSON);
+            
             SetTargetFPS(120);
 
 #endregion
@@ -60,7 +61,7 @@ namespace ClothSimulator{
                 Model initialisation
             */
             
-            Mesh sphere = GenMeshSphere(1f,50,50);
+            Mesh sphere = GenMeshSphere(1f,75,50);
             Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
 
             Material mt = LoadMaterialDefault();
@@ -82,39 +83,56 @@ namespace ClothSimulator{
             /*
                 Univer initialisation
             */
+
+            Univers univers = new Univers(10f,0.01f);
+
+
             ParticuleDrawer.model = model;
             Random rnd = new Random();
             List<Particule> entities = new List<Particule>();
             List<Raylib_cs.Color> colors = new List<Color>();
 
-            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,150f,1.5f,0.0f));
+            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,75,1.1f,0.0f));
+            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250f, 0f, 0), 100000,50f,1f,0.0f));
 
-            entities.Add(new Particule(new Vector3(15f, 350, 15f), new Vector3(-20f, -180, 0), 500,15,0.95f,0.01f));
+            entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));
+            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0f, 0f, 75), 500,15,0.6f,0.01f));
 
-            entities.Add(new Particule(new Vector3(10f, -150, 0f), new Vector3(5f, 90f, 200), 500,15,0.95f,0.01f));
-
-            entities.Add(new Particule(new Vector3(250, 0f, 0f), new Vector3(0f, 0f, 60), 1000,25f,0.95f,0.1f));
-
-            colors.Add(new Raylib_cs.Color(237, 217, 0,255));
-            colors.Add(new Raylib_cs.Color(0, 230, 207,255));
-            colors.Add(new Raylib_cs.Color(0, 230, 207,255));
-            colors.Add(new Raylib_cs.Color(49, 224, 0,255));
+            colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
+            colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
+            colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
+            colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
 
             Tissue drape = new Tissue(new Vector3(0,300,2),45,45,entities,colors);
             Spring_force[] spring_forces = new Spring_force[drape.springs.Count()];
             
-            
-            for(int i = 0; i < 500; i++){
+            Vector3 up = new Vector3(0,1,0);        
+            for(int i = 0; i < 1500; i++){
+
+                float xz_dist = rnd.Next((int)entities[0].radius * 4,(int)entities[0].radius*5);
+                float xz_angle = rnd.Next();
+
+                float x =  xz_dist * (float)Math.Cos(xz_angle);
+                float z = -xz_dist * (float)Math.Sin(xz_angle);
+
+                Vector3 pos = new Vector3(x,rnd.Next(-50,50),z);  //v = √ G * M / r
+
+                float mass = rnd.Next(1,5);
+                float dist = Vector3.Distance(pos,entities[0].position);
+                float total_mass = mass + entities[0].mass;
+                float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);
+
+                Vector3 vel =  Vector3.Normalize(Vector3.Cross(pos,up))*speed;
                 entities.Add(new Particule(
-                    new Vector3(rnd.Next(-500,500),rnd.Next(-50,50),rnd.Next(-500,500)),
-                    new Vector3(rnd.Next(-100,100),rnd.Next(-5,5),rnd.Next(-100,100)),
-                    rnd.Next(1,10),
-                    rnd.Next(1,5),
+                    pos,
+                    vel,
+                    mass,
+                    mass*1.3f,
                     0.9f,
-                    ((float)rnd.NextDouble())*0.1f
+                    0.0f
                 ));
-                colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(10,50),GetRandomValue(10,50),255));
+                colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
             }
             
 
@@ -132,6 +150,8 @@ namespace ClothSimulator{
             */
             
             GPU computeGPU = new GPU();
+            CLBuffer Buniver = computeGPU.CreateBuffer<Univers>(MemoryFlags.ReadWrite,new Univers[1]{univers});
+
             CLBuffer B1 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B2 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B3 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
@@ -148,31 +168,41 @@ namespace ClothSimulator{
             CLKernel springsF_applier = computeGPU.CreateKernel("OpenCl/spring_applier.cl","ComputeSpringForce");
 
 
-            computeGPU.SetKernelArg(gravity_applier,0,B1);
-            computeGPU.SetKernelArg(gravity_applier,1,B2);
+            computeGPU.SetKernelArg(gravity_applier,0,Buniver);
+            computeGPU.SetKernelArg(gravity_applier,1,B1);
+            computeGPU.SetKernelArg(gravity_applier,2,B2);
+
 
             computeGPU.SetKernelArg(springs_applier,0,B2);
             computeGPU.SetKernelArg(springs_applier,1,BSpring);
             computeGPU.SetKernelArg(springs_applier,2,BSpringF);
+
 
             computeGPU.SetKernelArg(springsF_applier,0,B1);
             computeGPU.SetKernelArg(springsF_applier,1,B2);
             computeGPU.SetKernelArg(springsF_applier,2,BSpringF);
             computeGPU.SetKernelArg(springsF_applier,3,BCloth);
 
-            computeGPU.SetKernelArg(velocity_applier,0,B1);
-            computeGPU.SetKernelArg(velocity_applier,1,B2);
 
-            computeGPU.SetKernelArg(position_applier,0,B1);
-            computeGPU.SetKernelArg(position_applier,1,B2);
+            computeGPU.SetKernelArg(velocity_applier,0,Buniver);
+            computeGPU.SetKernelArg(velocity_applier,1,B1);
+            computeGPU.SetKernelArg(velocity_applier,2,B2);
+
+
+            computeGPU.SetKernelArg(position_applier,0,Buniver);
+            computeGPU.SetKernelArg(position_applier,1,B1);
+            computeGPU.SetKernelArg(position_applier,2,B2);
             
-            computeGPU.SetKernelArg(collision_applier,0,B1);
-            computeGPU.SetKernelArg(collision_applier,1,B2);
+
+            computeGPU.SetKernelArg(collision_applier,0,Buniver);
+            computeGPU.SetKernelArg(collision_applier,1,B1);
+            computeGPU.SetKernelArg(collision_applier,2,B2);
             
 
             computeGPU.Upload<Particule>(B1,entities.ToArray());
             computeGPU.Upload<Spring>(BSpring,drape.springs);
             computeGPU.Upload<Cloth_settings>(BCloth,new Cloth_settings[1]{drape.settings});
+            computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
 #endregion
 
 
@@ -180,6 +210,7 @@ namespace ClothSimulator{
                 Main loop
             */
 
+            bool started = false;
             int current_view = 0;
             bool showgrid = false;
             while (!WindowShouldClose()) {
@@ -192,6 +223,26 @@ namespace ClothSimulator{
                 }
 
                 
+                if(IsKeyDown(KEY_KP_ADD)){
+                    if(IsKeyDown(KEY_RIGHT_CONTROL)){
+                        univers.dt += 0.001f;
+                    }else{
+                        univers.dt += 0.0001f;
+                    }
+                    computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
+                }
+                if(IsKeyDown(KEY_KP_SUBTRACT)){
+                    if(IsKeyDown(KEY_RIGHT_CONTROL)){
+                        univers.dt -= 0.001f;
+                    }else{
+                        univers.dt -= 0.0001f;
+                    }
+                    if(univers.dt <= 0){
+                        univers.dt = 0;
+                    }
+                    computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
+                }
+
 
                 if(IsKeyPressed(KEY_UP)){
                     current_view--;
@@ -208,9 +259,13 @@ namespace ClothSimulator{
                     current_view = 0;
                 }
 
+                if(IsKeyPressed(KEY_SPACE)){
+                    started = true;
+                }
+
                 camera.target = output_enties[current_view].position;
 
-                //if(IsKeyDown(KEY_RIGHT)){
+                if(started){
 
                     computeGPU.Execute(gravity_applier ,1,entities.Count());     
                     computeGPU.Execute(springs_applier,1,drape.springs.Count());
@@ -238,7 +293,7 @@ namespace ClothSimulator{
                     computeGPU.Download<Spring>(BSpring,drape.springs);
                     computeGPU.Download<Particule>(B2,output_enties);
                     computeGPU.Upload<Particule>(B1,output_enties);
-                //}
+                }
                 
 
 
@@ -249,12 +304,27 @@ namespace ClothSimulator{
                         ParticuleDrawer.DrawSprings(output_enties,drape);
                         ParticuleDrawer.Draw(output_enties,colorArray);
 
-                        if(showgrid)
+                        if(showgrid){
                             DrawGrid(100, 10.0f);
+
+                            DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.RED);
+                            DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].acceleration,Vector3.Normalize(output_enties[current_view].acceleration) * output_enties[current_view].radius)),Color.ORANGE);
+
+
+                        }
                     EndMode3D();
 
-                    DrawFPS(10, 10);
-                    DrawText(current_view.ToString(),10,50,20,Color.DARKGREEN);
+                    if(showgrid){
+                        DrawFPS(10, 10);
+                        DrawText(univers.dt.ToString("F4"),50,50,20,Color.DARKGREEN);
+                        DrawText(current_view.ToString(),10,50,20,Color.DARKGREEN);
+                        
+                        DrawText(output_enties[current_view].acceleration.ToString("F3"),10,75,20,Color.DARKGREEN);
+                        DrawText(output_enties[current_view].velocity.ToString("F3"),10,100,20,Color.DARKGREEN);
+                        DrawText(output_enties[current_view].position.ToString("F3"),10,125,20,Color.DARKGREEN);
+                    }
+
+                    
 
                 EndDrawing();
             }

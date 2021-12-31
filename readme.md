@@ -1,5 +1,8 @@
 # Gravity and cloth simulation
 
+35 fps | Cloth of 45/45 and 1504 independant particules
+I7-10700K, 1080ti, 32GB ram
+
 ## Force simulated :
 - Gravity
 - Springs with directional dampening
@@ -102,3 +105,7 @@ They both are exectuted once per particule
 2 : Ouput (array of all the particuls)
 ```
 Executed once for every particules
+
+## Improvement
+- don't download the buffer and keep every thing on the GPU (big FPS increase)
+- Change data structure for an 3D map to improve collision check

@@ -106,13 +106,15 @@ namespace ClothSimulator{
 
                 //color for each Particule (Sun 1 , sun 2, planet 1 and 2)
             colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
-            colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
+            colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
+            Tissue drape2 = new Tissue(new Vector3(40,310,50),10,10,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
                 
-            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,entities,colors);      //fill the entities array with all the tissue particule
-            Spring_force[] spring_forces = new Spring_force[drape.springs.Count()];     //create an array for each springs
+
+            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+
             
 
                 //generation of a ring of particule arround the first sun
@@ -158,66 +160,83 @@ namespace ClothSimulator{
             */
             
             GPU computeGPU = new GPU();
-            CLBuffer Buniver = computeGPU.CreateBuffer<Univers>(MemoryFlags.ReadWrite,new Univers[1]{univers});
+            CLBuffer bUniver = computeGPU.CreateBuffer<Univers>(MemoryFlags.ReadWrite,new Univers[1]{univers});
 
             CLBuffer B1 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B2 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
 
-            CLBuffer BSpring = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape.springs.ToArray());
-            CLBuffer BSpringF = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,spring_forces);
-            CLBuffer BCloth = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape.settings});
+            CLBuffer bSprings = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape.springs.ToArray());
+            CLBuffer bSpringsForce = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape.spring_forces);
+            CLBuffer bClothSettings = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape.settings});
 
-            CLKernel gravity_applier   = computeGPU.CreateKernel("OpenCl/particul_gravity.cl","ComputeGravity");
-            CLKernel velocity_applier  = computeGPU.CreateKernel("OpenCl/particul_velocity.cl","ComputeVelocity");
-            CLKernel position_applier  = computeGPU.CreateKernel("OpenCl/particul_position.cl","ComputePosition");
-            CLKernel collision_applier = computeGPU.CreateKernel("OpenCl/particul_collision.cl","ComputeCollision");
-            CLKernel springs_applier   = computeGPU.CreateKernel("OpenCl/particul_spring.cl","ComputeSpring");
-            CLKernel springsF_applier  = computeGPU.CreateKernel("OpenCl/spring_applier.cl","ComputeSpringForce");
+            CLBuffer bSprings_2 = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape2.springs.ToArray());
+            CLBuffer bSpringsForce_2 = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape2.spring_forces);
+            CLBuffer bClothSettings_2 = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape2.settings});
 
 
-            computeGPU.SetKernelArg(gravity_applier,0,Buniver);
-            computeGPU.SetKernelArg(gravity_applier,1,B1);
-            computeGPU.SetKernelArg(gravity_applier,2,B2);
+            CLKernel kComputeGravity   = computeGPU.CreateKernel("OpenCl/kComputeGravity.cl","ComputeGravity");
+            CLKernel kComputeVel  = computeGPU.CreateKernel("OpenCl/kComputeVel.cl","ComputeVel");
+            CLKernel kComputePos  = computeGPU.CreateKernel("OpenCl/kComputePos.cl","ComputePos");
+            CLKernel kComputeCollision = computeGPU.CreateKernel("OpenCl/kComputeCollision.cl","ComputeCollision");
+            CLKernel kComputeSpringForce   = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
+            CLKernel kComputeSpring  = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
+
+            CLKernel kComputeSpringForce_2   = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
+            CLKernel kComputeSpring_2  = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
 
 
-            computeGPU.SetKernelArg(springs_applier,0,B2);
-            computeGPU.SetKernelArg(springs_applier,1,BSpring);
-            computeGPU.SetKernelArg(springs_applier,2,BSpringF);
+            computeGPU.SetKernelArg(kComputeGravity,0,bUniver);
+            computeGPU.SetKernelArg(kComputeGravity,1,B1);
+            computeGPU.SetKernelArg(kComputeGravity,2,B2);
 
 
-            computeGPU.SetKernelArg(springsF_applier,0,B1);
-            computeGPU.SetKernelArg(springsF_applier,1,B2);
-            computeGPU.SetKernelArg(springsF_applier,2,BSpringF);
-            computeGPU.SetKernelArg(springsF_applier,3,BCloth);
+            computeGPU.SetKernelArg(kComputeSpringForce,0,B2);
+            computeGPU.SetKernelArg(kComputeSpringForce,1,bSprings);
+            computeGPU.SetKernelArg(kComputeSpringForce,2,bSpringsForce);
+
+            computeGPU.SetKernelArg(kComputeSpring,0,B2);
+            computeGPU.SetKernelArg(kComputeSpring,1,bSpringsForce);
+            computeGPU.SetKernelArg(kComputeSpring,2,bClothSettings);
+
+            computeGPU.SetKernelArg(kComputeSpringForce_2,0,B2);
+            computeGPU.SetKernelArg(kComputeSpringForce_2,1,bSprings_2);
+            computeGPU.SetKernelArg(kComputeSpringForce_2,2,bSpringsForce_2);
+
+            computeGPU.SetKernelArg(kComputeSpring_2,0,B2);
+            computeGPU.SetKernelArg(kComputeSpring_2,1,bSpringsForce_2);
+            computeGPU.SetKernelArg(kComputeSpring_2,2,bClothSettings_2);
 
 
-            computeGPU.SetKernelArg(velocity_applier,0,Buniver);
-            computeGPU.SetKernelArg(velocity_applier,1,B1);
-            computeGPU.SetKernelArg(velocity_applier,2,B2);
+            computeGPU.SetKernelArg(kComputeVel,0,bUniver);
+            computeGPU.SetKernelArg(kComputeVel,1,B2);
+            computeGPU.SetKernelArg(kComputeVel,2,B1);
 
 
-            computeGPU.SetKernelArg(position_applier,0,Buniver);
-            computeGPU.SetKernelArg(position_applier,1,B1);
-            computeGPU.SetKernelArg(position_applier,2,B2);
+            computeGPU.SetKernelArg(kComputePos,0,bUniver);
+            computeGPU.SetKernelArg(kComputePos,1,B1);
+            computeGPU.SetKernelArg(kComputePos,2,B2);
             
 
-            computeGPU.SetKernelArg(collision_applier,0,Buniver);
-            computeGPU.SetKernelArg(collision_applier,1,B1);
-            computeGPU.SetKernelArg(collision_applier,2,B2);
+            computeGPU.SetKernelArg(kComputeCollision,0,bUniver);
+            computeGPU.SetKernelArg(kComputeCollision,1,B2);
+            computeGPU.SetKernelArg(kComputeCollision,2,B1);
             
 
             computeGPU.Upload<Particule>(B1,entities.ToArray());
-            computeGPU.Upload<Spring>(BSpring,drape.springs);
-            computeGPU.Upload<Cloth_settings>(BCloth,new Cloth_settings[1]{drape.settings});
-            computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
+
+            computeGPU.Upload<Spring>(bSprings,drape.springs);
+            computeGPU.Upload<Cloth_settings>(bClothSettings,new Cloth_settings[1]{drape.settings});
+
+            computeGPU.Upload<Spring>(bSprings_2,drape2.springs);
+            computeGPU.Upload<Cloth_settings>(bClothSettings_2,new Cloth_settings[1]{drape2.settings});
+            
+            computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
 #endregion
 
 
             /*
                 Main loop
             */
-
-            
 
             bool started = false;   // tells if the simulation is started
             int current_view = 0;   // tells witch particule the camera follow
@@ -241,7 +260,7 @@ namespace ClothSimulator{
                     }else{
                         univers.dt += 0.0001f;
                     }
-                    computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
+                    computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
                 }
                 if(IsKeyDown(KEY_KP_SUBTRACT)){
                     if(IsKeyDown(KEY_RIGHT_CONTROL)){
@@ -252,7 +271,7 @@ namespace ClothSimulator{
                     if(univers.dt <= 0){
                         univers.dt = 0;
                     }
-                    computeGPU.Upload<Univers>(Buniver,new Univers[1]{univers});
+                    computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
                 }
 
 
@@ -290,32 +309,21 @@ namespace ClothSimulator{
 #region SIMULATION                
                 if(started){
 
-                    computeGPU.Execute(gravity_applier ,1,entities.Count());     
-                    computeGPU.Execute(springs_applier,1,drape.springs.Count());
+                    computeGPU.Execute(kComputeGravity ,1,entities.Count());    
 
-                    computeGPU.Download<Particule>(B2,output_enties);
-                    computeGPU.Upload<Particule>(B1,output_enties);
+                    computeGPU.Execute(kComputeSpringForce,1,drape.springs.Count());
+                    computeGPU.Execute(kComputeSpring,1,drape.settings.count);
 
-                    computeGPU.Execute(springsF_applier,1,drape.settings.count);
+                    computeGPU.Execute(kComputeSpringForce_2,1,drape2.springs.Count());
+                    computeGPU.Execute(kComputeSpring_2,1,drape2.settings.count);
 
-                    computeGPU.Download<Particule>(B2,output_enties);
-                    computeGPU.Upload<Particule>(B1,output_enties);
+                    computeGPU.Execute(kComputeVel,1,entities.Count());
+                    computeGPU.Execute(kComputePos,1,entities.Count());
+                    computeGPU.Execute(kComputeCollision,1,entities.Count());
 
-                    computeGPU.Execute(velocity_applier,1,entities.Count());
+                    computeGPU.Download<Spring>(bSprings,drape.springs);
+                    computeGPU.Download<Particule>(B1,output_enties);
 
-                    computeGPU.Download<Particule>(B2,output_enties);
-                    computeGPU.Upload<Particule>(B1,output_enties);
-
-                    computeGPU.Execute(position_applier,1,entities.Count());
-
-                    computeGPU.Download<Particule>(B2,output_enties);
-                    computeGPU.Upload<Particule>(B1,output_enties);
-
-                    computeGPU.Execute(collision_applier,1,entities.Count());
-
-                    computeGPU.Download<Spring>(BSpring,drape.springs);
-                    computeGPU.Download<Particule>(B2,output_enties);
-                    computeGPU.Upload<Particule>(B1,output_enties);
                 }
                 
 #endregion
@@ -324,7 +332,8 @@ namespace ClothSimulator{
                     ClearBackground(BLACK);
 
                     BeginMode3D(camera);
-                        ParticuleDrawer.DrawSprings(output_enties,drape);   //draw all springs
+                        ParticuleDrawer.DrawSprings(output_enties,colorArray,drape);   //draw all springs
+                        ParticuleDrawer.DrawSprings(output_enties,colorArray,drape2);   //draw all springs
                         ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
 
                         //debug

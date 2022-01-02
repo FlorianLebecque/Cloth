@@ -18,19 +18,28 @@ namespace Cloth.classes {
         
         public Spring[] springs;
 
+        public Spring_force[] spring_forces;     //create an array for each springs
+         
         public Cloth_settings settings;
 
         private float rest_distance;
         private float max_distance;
         private float roughtness;
 
+        public Raylib_cs.Color color;
 
-        public Tissue(Vector3 position,int n,int m,List<Particule> entites,List<Raylib_cs.Color> colors){
+        public Tissue(Vector3 position,int n,int m,float rest_distance_,float roughness_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
 
-            rest_distance = 3f;
+            color = c_;
+
+            Random rnd = new Random();
+
+            
+
+            rest_distance = rest_distance_;
             max_distance = 7f*rest_distance;
 
-            roughtness = 1f;
+            roughtness = roughness_;
 
 
             int offset = entites.Count();
@@ -63,8 +72,20 @@ namespace Cloth.classes {
                     );
                     entites.Add(pt);
 
-                    colors.Add(new Raylib_cs.Color(50,50,GetRandomValue(100,255),255));
+                    int R = c_.r + rnd.Next(-10,10);
+                    int G = c_.g + rnd.Next(-10,10);
+                    int B = c_.b + rnd.Next(-10,10);
 
+                    if(R >255) R = 255;
+                    if(G >255) G = 255;
+                    if(B >255) B = 255;
+
+                    if(R < 0) R = 0;
+                    if(G < 0) G = 0;
+                    if(B < 0) B = 0;
+
+                    colors.Add(new Raylib_cs.Color(R,G,B,255));
+                    
                     int index = GetIndex(offset,i,j,m);
 
 
@@ -158,6 +179,7 @@ namespace Cloth.classes {
             settings.nbr_spring = spring_list.Count();
 
             springs = spring_list.ToArray();
+            spring_forces = new Spring_force[springs.Count()];
         }
 
         private int GetIndex(int offset,int i,int j,int l){

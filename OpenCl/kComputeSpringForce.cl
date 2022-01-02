@@ -101,7 +101,7 @@ struct Vector3 V3Normalize(struct Vector3 V1){
     return resutl;
 }
 
-__kernel void ComputeSpring(__global struct Particule_obj *input,__global struct Spring *springs, __global struct Spring_force *sp){
+__kernel void ComputeSpringForce(__global struct Particule_obj *input,__global struct Spring *springs, __global struct Spring_force *sp){
     
 	int index = get_global_id(0);
 

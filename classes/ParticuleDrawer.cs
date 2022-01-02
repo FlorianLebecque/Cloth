@@ -45,10 +45,10 @@ namespace Cloth.classes
             }
         }
 
-        public static void DrawSprings(Particule[] entities,Tissue drape){
+        public static void DrawSprings(Particule[] entities,Raylib_cs.Color[] colors,Tissue drape){
             foreach(Spring sp in drape.springs){
                 if(sp.broken == 1){
-                    DrawLine3D(entities[sp.particul_1].position,entities[sp.particul_2].position,Color.BLUE);
+                    DrawLine3D(entities[sp.particul_1].position,entities[sp.particul_2].position,colors[sp.particul_1]);
 
                 }
             }

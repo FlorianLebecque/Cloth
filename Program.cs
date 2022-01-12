@@ -184,16 +184,16 @@ namespace ClothSimulator{
             CLBuffer bOctree_regions    = computeGPU.CreateBuffer<Region>(MemoryFlags.ReadOnly,UniversTree.RegionsArray);
             CLBuffer bOctree_settings   = computeGPU.CreateBuffer<OctreeSettings>(MemoryFlags.ReadOnly,new OctreeSettings[]{UniversTree.settings});
 
-
             CLKernel kComputeGravity   = computeGPU.CreateKernel("OpenCl/kComputeGravity.cl","ComputeGravity");
-            CLKernel kComputeVel  = computeGPU.CreateKernel("OpenCl/kComputeVel.cl","ComputeVel");
-            CLKernel kComputePos  = computeGPU.CreateKernel("OpenCl/kComputePos.cl","ComputePos");
+            CLKernel kComputeVel       = computeGPU.CreateKernel("OpenCl/kComputeVel.cl","ComputeVel");
+            CLKernel kComputePos       = computeGPU.CreateKernel("OpenCl/kComputePos.cl","ComputePos");
             CLKernel kComputeCollision = computeGPU.CreateKernel("OpenCl/kComputeCollision.cl","ComputeCollision");
-            CLKernel kComputeSpringForce   = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
-            CLKernel kComputeSpring  = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
 
-            CLKernel kComputeSpringForce_2   = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
-            CLKernel kComputeSpring_2  = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
+            CLKernel kComputeSpringForce    = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
+            CLKernel kComputeSpring         = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
+
+            CLKernel kComputeSpringForce_2  = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
+            CLKernel kComputeSpring_2       = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
 
 
             computeGPU.SetKernelArg(kComputeGravity,0,bUniver);

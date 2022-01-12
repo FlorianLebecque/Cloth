@@ -16,14 +16,11 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
+using Cloth.classes.tree;
+
 namespace ClothSimulator{
 
     class Program{
-
-        static float V3Length(Vector3 v){
-            
-            return (float)Math.Sqrt((v.X*v.X)+(v.Y*v.Y)+(v.Z*v.Z));
-        }
 
         static void Main(string[] args){
 
@@ -31,12 +28,11 @@ namespace ClothSimulator{
             const int ScreenWidth = 1920;
             const int ScreenHeight = 1080;
 
+
 #region  RAYLIB
             /*
                 Raylib initialisation
             */
-
-
 
             SetConfigFlags(FLAG_MSAA_4X_HINT);
             SetConfigFlags(FLAG_WINDOW_HIGHDPI);
@@ -119,7 +115,7 @@ namespace ClothSimulator{
 
                 //generation of a ring of particule arround the first sun
             Vector3 up = new Vector3(0,1,0);        
-            for(int i = 0; i < 1500; i++){
+            for(int i = 0; i < 3000; i++){
 
                 float xz_dist = rnd.Next((int)entities[0].radius * 4,(int)entities[0].radius*5);
                 float xz_angle = rnd.Next();
@@ -146,6 +142,10 @@ namespace ClothSimulator{
                 colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
             }
             
+            Octree UniversTree = new Octree(100,entities.Count()); 
+            UniversTree.inserts(entities.ToArray());
+            UniversTree.GenParticulesArray();
+
                 //get an array of particule
             Particule[] output_enties = entities.ToArray();
                 //get an array of colors
@@ -165,13 +165,17 @@ namespace ClothSimulator{
             CLBuffer B1 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
             CLBuffer B2 = computeGPU.CreateBuffer<Particule>(MemoryFlags.ReadWrite,entities.ToArray());
 
-            CLBuffer bSprings = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape.springs.ToArray());
-            CLBuffer bSpringsForce = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape.spring_forces);
+            CLBuffer bSprings       = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape.springs.ToArray());
+            CLBuffer bSpringsForce  = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape.spring_forces);
             CLBuffer bClothSettings = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape.settings});
 
-            CLBuffer bSprings_2 = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape2.springs.ToArray());
-            CLBuffer bSpringsForce_2 = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape2.spring_forces);
-            CLBuffer bClothSettings_2 = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape2.settings});
+            CLBuffer bSprings_2         = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,drape2.springs.ToArray());
+            CLBuffer bSpringsForce_2    = computeGPU.CreateBuffer<Spring_force>(MemoryFlags.ReadWrite,drape2.spring_forces);
+            CLBuffer bClothSettings_2   = computeGPU.CreateBuffer<Cloth_settings>(MemoryFlags.ReadWrite,new Cloth_settings[1]{drape2.settings});
+
+            CLBuffer bOctree_data       = computeGPU.CreateBuffer<int>(MemoryFlags.ReadOnly,new int[entities.Count()]);
+            CLBuffer bOctree_regions    = computeGPU.CreateBuffer<Region>(MemoryFlags.ReadOnly,UniversTree.RegionsArray);
+            CLBuffer bOctree_settings   = computeGPU.CreateBuffer<OctreeSettings>(MemoryFlags.ReadOnly,new OctreeSettings[]{UniversTree.settings});
 
 
             CLKernel kComputeGravity   = computeGPU.CreateKernel("OpenCl/kComputeGravity.cl","ComputeGravity");
@@ -220,6 +224,9 @@ namespace ClothSimulator{
             computeGPU.SetKernelArg(kComputeCollision,0,bUniver);
             computeGPU.SetKernelArg(kComputeCollision,1,B2);
             computeGPU.SetKernelArg(kComputeCollision,2,B1);
+            computeGPU.SetKernelArg(kComputeCollision,3,bOctree_settings);
+            computeGPU.SetKernelArg(kComputeCollision,4,bOctree_regions);
+            computeGPU.SetKernelArg(kComputeCollision,5,bOctree_data);
             
 
             computeGPU.Upload<Particule>(B1,entities.ToArray());
@@ -231,12 +238,17 @@ namespace ClothSimulator{
             computeGPU.Upload<Cloth_settings>(bClothSettings_2,new Cloth_settings[1]{drape2.settings});
             
             computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
-#endregion
 
+            computeGPU.Upload<OctreeSettings>(bOctree_settings,new OctreeSettings[]{UniversTree.settings});
+            computeGPU.Upload<Region>(bOctree_regions,UniversTree.RegionsArray);
+            computeGPU.Upload<int>(bOctree_data,UniversTree.ParticulesArray);
+#endregion
 
             /*
                 Main loop
             */
+
+
 
             bool started = false;   // tells if the simulation is started
             int current_view = 0;   // tells witch particule the camera follow
@@ -244,6 +256,9 @@ namespace ClothSimulator{
 
             Vector3 CamTarget = new Vector3(entities[0].position.X,entities[0].position.Y,entities[0].position.Z);
             Vector3 CamObj = output_enties[current_view].position;
+
+            Cube current_cube = new Cube(entities[current_view].position,80);
+            Color cl = new Color(0,255,0,255);
 
             while (!WindowShouldClose()) {
 
@@ -262,6 +277,7 @@ namespace ClothSimulator{
                     }
                     computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
                 }
+
                 if(IsKeyDown(KEY_KP_SUBTRACT)){
                     if(IsKeyDown(KEY_RIGHT_CONTROL)){
                         univers.dt -= 0.001f;
@@ -273,7 +289,6 @@ namespace ClothSimulator{
                     }
                     computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
                 }
-
 
                 if(IsKeyPressed(KEY_UP)){
                     current_view--;
@@ -309,6 +324,12 @@ namespace ClothSimulator{
 #region SIMULATION                
                 if(started){
 
+                    UniversTree.GenParticulesArray();
+
+                    computeGPU.Upload<OctreeSettings>(bOctree_settings,new OctreeSettings[]{UniversTree.settings});
+                    computeGPU.Upload<Region>(bOctree_regions,UniversTree.RegionsArray);
+                    computeGPU.Upload<int>(bOctree_data,UniversTree.ParticulesArray);
+
                     computeGPU.Execute(kComputeGravity ,1,entities.Count());    
 
                     computeGPU.Execute(kComputeSpringForce,1,drape.springs.Count());
@@ -328,6 +349,9 @@ namespace ClothSimulator{
                 
 #endregion
 
+                UniversTree = new Octree(32,entities.Count()); 
+                UniversTree.inserts(output_enties);
+
                 BeginDrawing();
                     ClearBackground(BLACK);
 
@@ -338,11 +362,19 @@ namespace ClothSimulator{
 
                         //debug
                         if(showgrid){
+                            UniversTree.Draw();
                             DrawGrid(100, 50.0f);
 
                             //draw velocity and acceleration vector for selected particule
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.RED);
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].acceleration,Vector3.Normalize(output_enties[current_view].acceleration) * output_enties[current_view].radius)),Color.ORANGE);
+                        
+                            current_cube.center = output_enties[current_view].position;
+                            current_cube.size = output_enties[current_view].radius*2;
+                            current_cube.recompute();
+
+                            current_cube.Draw(cl);
+                        
                         }
                     EndMode3D();
 
@@ -354,6 +386,12 @@ namespace ClothSimulator{
                         DrawText(output_enties[current_view].acceleration.ToString("F3"),10,75,20,Color.DARKGREEN);
                         DrawText(output_enties[current_view].velocity.ToString("F3"),10,100,20,Color.DARKGREEN);
                         DrawText(output_enties[current_view].position.ToString("F3"),10,125,20,Color.DARKGREEN);
+
+
+                        
+                        DrawText(UniversTree.capacity.ToString("F3"),50,150,20,Color.DARKGREEN);
+                        DrawText(UniversTree.particulCount.ToString(),50,175,20,Color.DARKGREEN);
+                        //DrawText(current_view.ToString(),10,50,175,Color.DARKGREEN);
                     }
 
                     

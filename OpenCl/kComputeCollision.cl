@@ -19,6 +19,41 @@ struct Particule_obj{
     float roughness;
 };
 
+struct OctreeSettings{
+    int particules_count;
+    int regions_count;
+};
+
+struct Cube {
+    struct Vector3 center;
+    float size;
+    struct Vector3 p0;
+    struct Vector3 p1;
+    struct Vector3 p2;
+    struct Vector3 p3;
+    struct Vector3 p4;
+    struct Vector3 p5;
+    struct Vector3 p6;
+    struct Vector3 p7;
+};
+
+struct Region {
+        
+    int capacity;
+    int count;
+    bool subdivided;
+    int offset;  
+    struct Cube region;
+    int child_s_nw;
+    int child_s_ne;
+    int child_s_se;
+    int child_s_sw;
+    int child_t_nw;
+    int child_t_ne;
+    int child_t_se;
+    int child_t_sw;
+};
+
 float V3Length(struct Vector3 V1){
     return sqrt((V1.X*V1.X)+(V1.Y*V1.Y)+(V1.Z*V1.Z));
 }
@@ -87,14 +122,125 @@ struct Vector3 V3Normalize(struct Vector3 V1){
     return resutl;
 }
 
-__kernel void ComputeCollision(__global struct Univers *uni,__global struct Particule_obj *input, __global struct Particule_obj *output){
+bool Intersect(struct Cube c1,struct Cube c2){
+    bool IsX = ((c1.center.X + c1.size) >= (c2.center.X - c2.size)) &&  ((c1.center.X - c1.size) <= (c2.center.X + c2.center.X));
+    bool IsY = ((c1.center.Y + c1.size) >= (c2.center.Y - c2.size)) &&  ((c1.center.Y - c1.size) <= (c2.center.Y + c2.center.X));
+    bool IsZ = ((c1.center.Z + c1.size) >= (c2.center.Z - c2.size)) &&  ((c1.center.Z - c1.size) <= (c2.center.Z + c2.center.X));
+
+    return IsX && IsY && IsZ;
+}
+
+bool IsInCube(struct Cube c, struct Vector3 p){
+    bool IsX = (p.X >= (c.center.X - c.size))&&((p.X <= c.center.X + c.size));
+    bool IsY = (p.Y >= (c.center.Y - c.size))&&((p.Y <= c.center.Y + c.size));
+    bool IsZ = (p.Z >= (c.center.Z - c.size))&&((p.Z <= c.center.Z + c.size));
+
+    return IsX && IsY && IsZ;
+}
+
+
+
+int getParticules(struct Region *regions,int *treeData,struct Particule_obj *input,struct Cube space,int *arr){
+    int children[1000];
+    children[0] = 0;
+
+    int region_cursor = 0;
+    int region_counter = 1;
+
+    int particules_counter = 0;
+
+    while((region_cursor < region_counter)&&(particules_counter < 5000)){
+        int region_index = children[region_cursor];
+
+
+        if(Intersect(regions[region_index].region,space)){
+
+
+            //on check les particules dans la région
+            for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].count;i++){
+                //if(IsInCube(space,input[i].position)){
+                arr[particules_counter] = treeData[i];
+                //}
+                particules_counter++;
+            }
+
+            if(regions[region_index].subdivided){
+
+                if(regions[region_index].child_s_nw != -1){
+                    if(Intersect(regions[regions[region_index].child_s_nw].region,space)){
+                        children[region_counter] = regions[region_index].child_s_nw;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_s_ne != -1){
+                    if(Intersect(regions[regions[region_index].child_s_ne].region,space)){
+                        children[region_counter] = regions[region_index].child_s_ne;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_s_se != -1){
+                    if(Intersect(regions[regions[region_index].child_s_se].region,space)){
+                        children[region_counter] = regions[region_index].child_s_se;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_s_sw != -1){
+                    if(Intersect(regions[regions[region_index].child_s_sw].region,space)){
+                        children[region_counter] = regions[region_index].child_s_sw;
+                        region_counter++;
+                    }
+                }
+
+                if(regions[region_index].child_t_nw != -1){
+                    if(Intersect(regions[regions[region_index].child_t_nw].region,space)){
+                        children[region_counter] = regions[region_index].child_t_nw;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_t_ne != -1){
+                    if(Intersect(regions[regions[region_index].child_t_ne].region,space)){
+                        children[region_counter] = regions[region_index].child_t_ne;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_t_se != -1){
+                    if(Intersect(regions[regions[region_index].child_t_se].region,space)){
+                        children[region_counter] = regions[region_index].child_t_se;
+                        region_counter++;
+                    }
+                }
+                if(regions[region_index].child_t_sw != -1){
+                    if(Intersect(regions[regions[region_index].child_t_sw].region,space)){
+                        children[region_counter] = regions[region_index].child_t_sw;
+                        region_counter++;
+                    }
+                }
+            }
+        }
+
+        region_cursor++;
+    }
+
+    return particules_counter;
+}
+
+__kernel void ComputeCollision(__global struct Univers *uni,__global struct Particule_obj *input, __global struct Particule_obj *output,__global struct OctreeSettings *treeSettings,__global struct Region *treeRegions,__global int *treeData){
     int total = get_global_size(0);
 	int index = get_global_id(0);
 
     output[index] = input[index];
 
-    for(int i = 0; i < total;i++){
+    int particules[10000];
 
+    struct Cube space;
+    space.center = input[index].position;
+    space.size = input[index].radius * 100;
+    
+    int nbr_particule = getParticules(treeRegions,treeData,input,space,particules);
+    
+
+    for(int k = 0; k <= nbr_particule;k++){
+        int i = particules[k];
         if(i != index){
 
             float dist = V3Distance(input[index].position,input[i].position);

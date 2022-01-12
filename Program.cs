@@ -90,12 +90,12 @@ namespace ClothSimulator{
             Univers univers = new Univers(10f,0.01f);
 
             ParticuleDrawer.model = model;
-            Random rnd = new Random(2);
+            Random rnd = new Random(3);
             List<Particule> entities = new List<Particule>();
             List<Raylib_cs.Color> colors = new List<Color>();
 
             entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,1.1f,0.0f));           //sun
-            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-500, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
+            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
 
             entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));        //first planet (colide with tissue)
             entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f));        //seconde planet useless
@@ -106,7 +106,7 @@ namespace ClothSimulator{
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Tissue drape2 = new Tissue(new Vector3(40,310,50),10,10,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Tissue drape2 = new Tissue(new Vector3(40,310,50),15,15,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
                 
 
             Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
@@ -115,8 +115,11 @@ namespace ClothSimulator{
             Vector3 up = new Vector3(0,1,0);        
 
             foreach(int k in rings){
+
+                int nbr_particul = 1500;//(int)(1500 * (entities[k].radius/50));
+
                     //generation of a ring of particule arround the first sun
-                for(int i = 0; i < 1500; i++){
+                for(int i = 0; i < nbr_particul; i++){
 
                     float xz_dist = rnd.Next((int)entities[k].radius * 4,(int)entities[k].radius*5);
                     float xz_angle = rnd.Next();
@@ -137,7 +140,7 @@ namespace ClothSimulator{
                         vel,
                         mass,
                         mass*1.3f,
-                        0.9f,
+                        0.2f,
                         0.0f
                     ));
                     
@@ -347,6 +350,7 @@ namespace ClothSimulator{
                     computeGPU.Execute(kComputeCollision,1,entities.Count());
 
                     computeGPU.Download<Spring>(bSprings,drape.springs);
+                    computeGPU.Download<Spring>(bSprings_2,drape2.springs);
                     computeGPU.Download<Particule>(B1,output_enties);
 
                 }

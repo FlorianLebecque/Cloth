@@ -353,7 +353,7 @@ namespace ClothSimulator{
                 
 #endregion
 
-                UniversTree = new Octree(32,entities.Count()); 
+                UniversTree = new Octree(32,output_enties.Count());//.Clear(); //= new Octree(32,entities.Count());
                 UniversTree.inserts(output_enties);
 
                 BeginDrawing();
@@ -391,10 +391,9 @@ namespace ClothSimulator{
                         DrawText(output_enties[current_view].velocity.ToString("F3"),10,100,20,Color.DARKGREEN);
                         DrawText(output_enties[current_view].position.ToString("F3"),10,125,20,Color.DARKGREEN);
 
-
                         
-                        DrawText(UniversTree.capacity.ToString("F3"),50,150,20,Color.DARKGREEN);
-                        DrawText(UniversTree.particulCount.ToString(),50,175,20,Color.DARKGREEN);
+                        DrawText(UniversTree.capacity.ToString("F3"),10,150,20,Color.DARKGREEN);
+                        DrawText(UniversTree.particulCount.ToString(),10,175,20,Color.DARKGREEN);
                         //DrawText(current_view.ToString(),10,50,175,Color.DARKGREEN);
                     }
 

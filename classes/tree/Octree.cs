@@ -190,6 +190,23 @@ namespace Cloth.classes.tree {
             }
         }
 
+        public void Clear(){
+            particul_counter = 0;
+            region_counter = 0;
+
+            regions[0].child_s_nw = -1;
+            regions[0].child_s_ne = -1;
+            regions[0].child_s_se = -1;
+            regions[0].child_s_sw = -1;
+            regions[0].child_t_nw = -1;
+            regions[0].child_t_ne = -1;
+            regions[0].child_t_se = -1;
+            regions[0].child_t_sw = -1;
+
+            regions[0].count = 0;
+            regions[0].subdivided = false;
+
+        }
 
         public void GenParticulesArray(){
             

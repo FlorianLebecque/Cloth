@@ -106,22 +106,22 @@ namespace ClothSimulator{
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Tissue drape2 = new Tissue(new Vector3(40,310,50),15,15,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Tissue drape2 = new Tissue(new Vector3(40,310,50),2,2,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
                 
 
-            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Tissue drape = new Tissue(new Vector3(0,300,2),2,2,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
-            int[] rings = {0,1};
+            int[] rings = {0};
             Vector3 up = new Vector3(0,1,0);        
 
             foreach(int k in rings){
 
-                int nbr_particul = 1500;//(int)(1500 * (entities[k].radius/50));
+                int nbr_particul = 7000;//(int)(1500 * (entities[k].radius/50));
 
                     //generation of a ring of particule arround the first sun
                 for(int i = 0; i < nbr_particul; i++){
 
-                    float xz_dist = rnd.Next((int)entities[k].radius * 4,(int)entities[k].radius*5);
+                    float xz_dist = rnd.Next((int)entities[k].radius * 4,(int)entities[k].radius*8);
                     float xz_angle = rnd.Next();
 
                     float x =  xz_dist * (float)Math.Cos(xz_angle);
@@ -149,7 +149,7 @@ namespace ClothSimulator{
             }
 
         
-            Octree UniversTree = new Octree(100,entities.Count()); 
+            Octree UniversTree = new Octree(32,entities.Count()); 
             UniversTree.inserts(entities.ToArray());
             UniversTree.GenParticulesArray();
 

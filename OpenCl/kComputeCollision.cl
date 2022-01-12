@@ -130,10 +130,10 @@ bool Intersect(struct Cube c1,struct Cube c2){
     return IsX && IsY && IsZ;
 }
 
-bool IsInCube(struct Cube c, struct Vector3 p){
-    bool IsX = (p.X >= (c.center.X - c.size))&&((p.X <= c.center.X + c.size));
-    bool IsY = (p.Y >= (c.center.Y - c.size))&&((p.Y <= c.center.Y + c.size));
-    bool IsZ = (p.Z >= (c.center.Z - c.size))&&((p.Z <= c.center.Z + c.size));
+bool IsInCube(struct Cube c, struct Particule_obj p){
+    bool IsX = ((c.center.X + c.size) >= (p.position.X - p.radius)) &&  ((c.center.X - c.size) <= (p.position.X + p.radius));
+    bool IsY = ((c.center.Y + c.size) >= (p.position.Y - p.radius)) &&  ((c.center.Y - c.size) <= (p.position.Y + p.radius));
+    bool IsZ = ((c.center.Z + c.size) >= (p.position.Z - p.radius)) &&  ((c.center.Z - c.size) <= (p.position.Z + p.radius));
 
     return IsX && IsY && IsZ;
 }
@@ -149,15 +149,14 @@ int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData
 
     int particules_counter = 0; //number and index of the cursor in the queue of particule
 
-    while((region_cursor < region_counter)&&(particules_counter < ts[0].particules_count)){
+    while((region_cursor < region_counter)&&(particules_counter <= ts[0].particules_count)){
         int region_index = children[region_cursor];
 
         //on check les particules dans la région
         for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].capacity;i++){
-            if(IsInCube(space,input[i].position)){
+            if(IsInCube(space,input[i])){
                 particules_queue[particules_counter] = treeData[i];
                 particules_counter++;
-
             }
         }
 
@@ -287,7 +286,7 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
     c.center = center;
     c.size = 5000;
 
-    if(!IsInCube(c,output[index].position)){
+    if(!IsInCube(c,output[index])){
         output[index].position = V3Sub(output[index].position,V3fmul(output[index].velocity,uni[0].dt));
 
         output[index].velocity.X = - output[index].velocity.X;

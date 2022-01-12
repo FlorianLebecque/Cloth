@@ -16,14 +16,14 @@ namespace Cloth.classes.tree
         public Cube region;
 
         //childs (if exist)
-        public int child_s_nw;
-        public int child_s_ne;
-        public int child_s_se;
-        public int child_s_sw;
-        public int child_t_nw;
-        public int child_t_ne;
-        public int child_t_se;
-        public int child_t_sw;
+        public int child_s_nw = -1;
+        public int child_s_ne = -1;
+        public int child_s_se = -1;
+        public int child_s_sw = -1;
+        public int child_t_nw = -1;
+        public int child_t_ne = -1;
+        public int child_t_se = -1;
+        public int child_t_sw = -1;
 
         public Region(Vector3 center,float size,int region_capacity,int offset_){
             capacity = region_capacity;

@@ -140,83 +140,80 @@ bool IsInCube(struct Cube c, struct Vector3 p){
 
 
 
-int getParticules(struct Region *regions,int *treeData,struct Particule_obj *input,struct Cube space,int *arr){
-    int children[1000];
-    children[0] = 0;
+int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData,struct Particule_obj *input,struct Cube space,int *particules_queue){
+    int children[10000];    //array of the regions indexes (only the one we should check)
+    children[0] = 0;        //set the first region to check (the one whose index is 0)
 
-    int region_cursor = 0;
-    int region_counter = 1;
+    int region_cursor = 0;  // cursor who give the position in the children queue
+    int region_counter = 1; // number of element in the queue
 
-    int particules_counter = 0;
+    int particules_counter = 0; //number and index of the cursor in the queue of particule
 
-    while((region_cursor < region_counter)&&(particules_counter < 5000)){
+    while((region_cursor < region_counter)&&(particules_counter < ts[0].particules_count)){
         int region_index = children[region_cursor];
 
-
-        if(Intersect(regions[region_index].region,space)){
-
-
-            //on check les particules dans la région
-            for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].count;i++){
-                //if(IsInCube(space,input[i].position)){
-                arr[particules_counter] = treeData[i];
-                //}
+        //on check les particules dans la région
+        for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].capacity;i++){
+            if(IsInCube(space,input[i].position)){
+                particules_queue[particules_counter] = treeData[i];
                 particules_counter++;
+
+            }
+        }
+
+        if(regions[region_index].subdivided){
+
+            if(regions[region_index].child_s_nw != -1){
+                if(Intersect(regions[regions[region_index].child_s_nw].region,space)){
+                    children[region_counter] = regions[region_index].child_s_nw;
+                    region_counter++;
+                }
+            }
+            if(regions[region_index].child_s_ne != -1){
+                if(Intersect(regions[regions[region_index].child_s_ne].region,space)){
+                    children[region_counter] = regions[region_index].child_s_ne;
+                    region_counter++;
+                }
+            }
+            if(regions[region_index].child_s_se != -1){
+                if(Intersect(regions[regions[region_index].child_s_se].region,space)){
+                    children[region_counter] = regions[region_index].child_s_se;
+                    region_counter++;
+                }
+            }
+            if(regions[region_index].child_s_sw != -1){
+                if(Intersect(regions[regions[region_index].child_s_sw].region,space)){
+                    children[region_counter] = regions[region_index].child_s_sw;
+                    region_counter++;
+                }
             }
 
-            if(regions[region_index].subdivided){
-
-                if(regions[region_index].child_s_nw != -1){
-                    if(Intersect(regions[regions[region_index].child_s_nw].region,space)){
-                        children[region_counter] = regions[region_index].child_s_nw;
-                        region_counter++;
-                    }
+            if(regions[region_index].child_t_nw != -1){
+                if(Intersect(regions[regions[region_index].child_t_nw].region,space)){
+                    children[region_counter] = regions[region_index].child_t_nw;
+                    region_counter++;
                 }
-                if(regions[region_index].child_s_ne != -1){
-                    if(Intersect(regions[regions[region_index].child_s_ne].region,space)){
-                        children[region_counter] = regions[region_index].child_s_ne;
-                        region_counter++;
-                    }
+            }
+            if(regions[region_index].child_t_ne != -1){
+                if(Intersect(regions[regions[region_index].child_t_ne].region,space)){
+                    children[region_counter] = regions[region_index].child_t_ne;
+                    region_counter++;
                 }
-                if(regions[region_index].child_s_se != -1){
-                    if(Intersect(regions[regions[region_index].child_s_se].region,space)){
-                        children[region_counter] = regions[region_index].child_s_se;
-                        region_counter++;
-                    }
+            }
+            if(regions[region_index].child_t_se != -1){
+                if(Intersect(regions[regions[region_index].child_t_se].region,space)){
+                    children[region_counter] = regions[region_index].child_t_se;
+                    region_counter++;
                 }
-                if(regions[region_index].child_s_sw != -1){
-                    if(Intersect(regions[regions[region_index].child_s_sw].region,space)){
-                        children[region_counter] = regions[region_index].child_s_sw;
-                        region_counter++;
-                    }
-                }
-
-                if(regions[region_index].child_t_nw != -1){
-                    if(Intersect(regions[regions[region_index].child_t_nw].region,space)){
-                        children[region_counter] = regions[region_index].child_t_nw;
-                        region_counter++;
-                    }
-                }
-                if(regions[region_index].child_t_ne != -1){
-                    if(Intersect(regions[regions[region_index].child_t_ne].region,space)){
-                        children[region_counter] = regions[region_index].child_t_ne;
-                        region_counter++;
-                    }
-                }
-                if(regions[region_index].child_t_se != -1){
-                    if(Intersect(regions[regions[region_index].child_t_se].region,space)){
-                        children[region_counter] = regions[region_index].child_t_se;
-                        region_counter++;
-                    }
-                }
-                if(regions[region_index].child_t_sw != -1){
-                    if(Intersect(regions[regions[region_index].child_t_sw].region,space)){
-                        children[region_counter] = regions[region_index].child_t_sw;
-                        region_counter++;
-                    }
+            }
+            if(regions[region_index].child_t_sw != -1){
+                if(Intersect(regions[regions[region_index].child_t_sw].region,space)){
+                    children[region_counter] = regions[region_index].child_t_sw;
+                    region_counter++;
                 }
             }
         }
+        
 
         region_cursor++;
     }
@@ -234,10 +231,10 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
 
     struct Cube space;
     space.center = input[index].position;
-    space.size = input[index].radius * 100;
+    space.size = 100;
     
-    int nbr_particule = getParticules(treeRegions,treeData,input,space,particules);
-    
+    int nbr_particule = getParticules(treeSettings,treeRegions,treeData,input,space,particules);
+    //nbr_particule = -1;
 
     for(int k = 0; k <= nbr_particule;k++){
         int i = particules[k];
@@ -284,6 +281,18 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
 
     }
 
+    struct Vector3 center;
+    center.X = center.Y = center.Z = 0;
+    struct Cube c;
+    c.center = center;
+    c.size = 5000;
 
-   
+    if(!IsInCube(c,output[index].position)){
+        output[index].position = V3Sub(output[index].position,V3fmul(output[index].velocity,uni[0].dt));
+
+        output[index].velocity.X = - output[index].velocity.X;
+        output[index].velocity.Y = - output[index].velocity.Y;
+        output[index].velocity.Z = - output[index].velocity.Z;
+        
+    }
 };

@@ -94,8 +94,8 @@ namespace ClothSimulator{
             List<Particule> entities = new List<Particule>();
             List<Raylib_cs.Color> colors = new List<Color>();
 
-            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,75,1.1f,0.0f));           //sun
-            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250f, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
+            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,1.1f,0.0f));           //sun
+            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-500, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
 
             entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));        //first planet (colide with tissue)
             entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f));        //seconde planet useless
@@ -111,37 +111,41 @@ namespace ClothSimulator{
 
             Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
-            
-
-                //generation of a ring of particule arround the first sun
+            int[] rings = {0,1};
             Vector3 up = new Vector3(0,1,0);        
-            for(int i = 0; i < 3000; i++){
 
-                float xz_dist = rnd.Next((int)entities[0].radius * 4,(int)entities[0].radius*5);
-                float xz_angle = rnd.Next();
+            foreach(int k in rings){
+                    //generation of a ring of particule arround the first sun
+                for(int i = 0; i < 1500; i++){
 
-                float x =  xz_dist * (float)Math.Cos(xz_angle);
-                float z = -xz_dist * (float)Math.Sin(xz_angle);
+                    float xz_dist = rnd.Next((int)entities[k].radius * 4,(int)entities[k].radius*5);
+                    float xz_angle = rnd.Next();
 
-                Vector3 pos = new Vector3(x,rnd.Next(-50,50),z);  //v = √ G * M / r
+                    float x =  xz_dist * (float)Math.Cos(xz_angle);
+                    float z = -xz_dist * (float)Math.Sin(xz_angle);
 
-                float mass = rnd.Next(1,5);
-                float dist = Vector3.Distance(pos,entities[0].position);
-                float total_mass = mass + entities[0].mass;
-                float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);
+                    Vector3 pos = entities[k].position + new Vector3(x,rnd.Next(-(int)entities[k].radius/2,(int)entities[k].radius/2),z);  //v = √ G * M / r
 
-                Vector3 vel =  Vector3.Normalize(Vector3.Cross(pos,up))*speed;
-                entities.Add(new Particule(
-                    pos,
-                    vel,
-                    mass,
-                    mass*1.3f,
-                    0.9f,
-                    0.0f
-                ));
-                colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
+                    float mass = rnd.Next(1,5);
+                    float dist = Vector3.Distance(pos,entities[k].position);
+                    float total_mass = mass + entities[k].mass;
+                    float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);
+
+                    Vector3 vel =  entities[k].velocity + Vector3.Normalize(Vector3.Cross(pos - entities[k].position,up)) * speed;
+                    entities.Add(new Particule(
+                        pos,
+                        vel,
+                        mass,
+                        mass*1.3f,
+                        0.9f,
+                        0.0f
+                    ));
+                    
+                    colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
+                }
             }
-            
+
+        
             Octree UniversTree = new Octree(100,entities.Count()); 
             UniversTree.inserts(entities.ToArray());
             UniversTree.GenParticulesArray();
@@ -363,14 +367,14 @@ namespace ClothSimulator{
                         //debug
                         if(showgrid){
                             UniversTree.Draw();
-                            DrawGrid(100, 50.0f);
+                            //DrawGrid(100, 50.0f);
 
                             //draw velocity and acceleration vector for selected particule
-                            DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.RED);
+                            DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.DARKPURPLE);
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].acceleration,Vector3.Normalize(output_enties[current_view].acceleration) * output_enties[current_view].radius)),Color.ORANGE);
                         
                             current_cube.center = output_enties[current_view].position;
-                            current_cube.size = output_enties[current_view].radius*2;
+                            current_cube.size = 100;//output_enties[current_view].radius*2;
                             current_cube.recompute();
 
                             current_cube.Draw(cl);
@@ -380,7 +384,7 @@ namespace ClothSimulator{
 
                     if(showgrid){
                         DrawFPS(10, 10);
-                        DrawText(univers.dt.ToString("F4"),50,50,20,Color.DARKGREEN);
+                        DrawText(univers.dt.ToString("F4"),75,50,20,Color.DARKGREEN);
                         DrawText(current_view.ToString(),10,50,20,Color.DARKGREEN);
                         
                         DrawText(output_enties[current_view].acceleration.ToString("F3"),10,75,20,Color.DARKGREEN);

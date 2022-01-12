@@ -194,7 +194,7 @@ namespace Cloth.classes.tree {
         public void GenParticulesArray(){
             
             ParticulesArray = new int[nbr_particul];
-            RegionsArray = new Region[(int)Math.Ceiling((double)nbr_particul/(double)region_capacity) * 4];
+            RegionsArray    = new Region[(int)Math.Ceiling((double)nbr_particul/(double)region_capacity) * 4];
             int p_counter = 0;
             
 

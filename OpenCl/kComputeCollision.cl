@@ -123,9 +123,9 @@ struct Vector3 V3Normalize(struct Vector3 V1){
 }
 
 bool Intersect(struct Cube c1,struct Cube c2){
-    bool IsX = ((c1.center.X + c1.size) >= (c2.center.X - c2.size)) &&  ((c1.center.X - c1.size) <= (c2.center.X + c2.center.X));
-    bool IsY = ((c1.center.Y + c1.size) >= (c2.center.Y - c2.size)) &&  ((c1.center.Y - c1.size) <= (c2.center.Y + c2.center.X));
-    bool IsZ = ((c1.center.Z + c1.size) >= (c2.center.Z - c2.size)) &&  ((c1.center.Z - c1.size) <= (c2.center.Z + c2.center.X));
+    bool IsX = ((c1.center.X + c1.size) >= (c2.center.X - c2.size)) &&  ((c1.center.X - c1.size) <= (c2.center.X + c2.size));
+    bool IsY = ((c1.center.Y + c1.size) >= (c2.center.Y - c2.size)) &&  ((c1.center.Y - c1.size) <= (c2.center.Y + c2.size));
+    bool IsZ = ((c1.center.Z + c1.size) >= (c2.center.Z - c2.size)) &&  ((c1.center.Z - c1.size) <= (c2.center.Z + c2.size));
 
     return IsX && IsY && IsZ;
 }
@@ -149,15 +149,15 @@ int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData
 
     int particules_counter = 0; //number and index of the cursor in the queue of particule
 
-    while((region_cursor < region_counter)&&(particules_counter <= ts[0].particules_count)){
+    while((region_cursor < region_counter)&&(particules_counter < ts[0].particules_count)){
         int region_index = children[region_cursor];
 
         //on check les particules dans la région
         for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].capacity;i++){
-            if(IsInCube(space,input[i])){
+            //if(IsInCube(space,input[i])){
                 particules_queue[particules_counter] = treeData[i];
                 particules_counter++;
-            }
+            //}
         }
 
         if(regions[region_index].subdivided){

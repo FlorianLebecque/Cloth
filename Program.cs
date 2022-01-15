@@ -27,7 +27,7 @@ namespace ClothSimulator{
 
             const int ScreenWidth = 1920;
             const int ScreenHeight = 1080;
-
+            Vector3 WORLD_UP = new Vector3(0,1,0);
 
 #region  RAYLIB
             /*
@@ -42,7 +42,7 @@ namespace ClothSimulator{
             Camera3D camera = new Camera3D();
             camera.position = new Vector3(400f, 100, 0f);    // Camera position
             camera.target = new Vector3(0.0f, 0.0f, 0.0f);      // Camera looking at point
-            camera.up = new Vector3(0.0f, 1.0f, 0.0f);    
+            camera.up = WORLD_UP;    
             camera.fovy = 90.0f;                                // Camera field-of-view Y
             camera.projection = CAMERA_PERSPECTIVE;
 
@@ -60,11 +60,11 @@ namespace ClothSimulator{
             Mesh sphere = GenMeshSphere(1f,75,50);
             Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
 
-            Material mt = LoadMaterialDefault();
-            Shader shader = LoadShader("resources/shaders/base.vs", "resources/shaders/base.fs");
-            int lightPosLoc = GetShaderLocation(shader, "lightPos");
-            Vector3 lightPos = new Vector3(0.0f, 0.0f, 0.0f );
-            Texture2D texture = LoadTexture("resources/textures/texel_checker.png");
+            //Material mt = LoadMaterialDefault();
+            //Shader shader = LoadShader("resources/shaders/base.vs", "resources/shaders/base.fs");
+            //int lightPosLoc = GetShaderLocation(shader, "lightPos");
+            //Vector3 lightPos = new Vector3(0.0f, 0.0f, 0.0f );
+            //Texture2D texture = LoadTexture("resources/textures/texel_checker.png");
 
             //RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
             //RaylibUtils.Utils.SetMaterialTexture(ref model,0,MATERIAL_MAP_DIFFUSE,ref texture);
@@ -90,66 +90,52 @@ namespace ClothSimulator{
             Univers univers = new Univers(10f,0.01f);
 
             ParticuleDrawer.model = model;
-            Random rnd = new Random(3);
-            List<Particule> entities = new List<Particule>();
-            List<Raylib_cs.Color> colors = new List<Color>();
+            Random rnd = new Random(2);
+            List<Particule> entities     = new();
+            List<Ring> RingsList         = new();
+            List<Raylib_cs.Color> colors = new();
 
-            entities.Add(new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,1.1f,0.0f));           //sun
-            entities.Add(new Particule(new Vector3(2500, 0f, 0f), new Vector3(-250, 0f, 0), 100000,50f,1f,0.0f));      //secondary sun (far away)
+            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.0f);
 
-            entities.Add(new Particule(new Vector3(5f, 350, 5f), new Vector3(-1f, -250, 0), 500,15,0.5f,0.01f));        //first planet (colide with tissue)
-            entities.Add(new Particule(new Vector3(550f, 0, 100f), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f));        //seconde planet useless
+            Particule Cloth_Planet   = new Particule(new Vector3(0f, 350, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
+            Particule Orbital_planet = new Particule(new Vector3(250, 0, 0), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
+            Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun,Orbital_planet,WORLD_UP,univers);
 
-                //color for each Particule (Sun 1 , sun 2, planet 1 and 2)
+            entities.Add(Sun);
+            entities.Add(new Particule(new Vector3(0, 0f, 4900), new Vector3(0, 0f, -500), 100000,50f,1.1f,0.0f));      //secondary sun (far away)
+            entities.Add(Cloth_Planet);   
+            entities.Add(Orbital_planet);
+
+                
             colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
             colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Tissue drape2 = new Tissue(new Vector3(40,310,50),2,2,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-                
+            Tissue drape2 = new Tissue(new Vector3(400,0,0),15,15,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
-            Tissue drape = new Tissue(new Vector3(0,300,2),2,2,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Ring MainRing = new Ring(entities,0,new Vector3(0,1,1), 6,8);
+            MainRing.radius_factor = 0.5f;
+            Ring SecRing = new Ring(entities,0,new Vector3(0,1,1), 11,12);
+            SecRing.nbr_particul = 2000;
+            SecRing.radius_factor = 0.5f;
 
-            int[] rings = {0};
-            Vector3 up = new Vector3(0,1,0);        
+            Ring OrbitPlanet = new Ring(entities,3,WORLD_UP, 2,3);
+            OrbitPlanet.nbr_particul = 100;
+            OrbitPlanet.radius_factor = 0.2f;
 
-            foreach(int k in rings){
 
-                int nbr_particul = 7000;//(int)(1500 * (entities[k].radius/50));
+            RingsList.Add(MainRing);
+            RingsList.Add(SecRing);
+            RingsList.Add(OrbitPlanet);
 
-                    //generation of a ring of particule arround the first sun
-                for(int i = 0; i < nbr_particul; i++){
-
-                    float xz_dist = rnd.Next((int)entities[k].radius * 4,(int)entities[k].radius*8);
-                    float xz_angle = rnd.Next();
-
-                    float x =  xz_dist * (float)Math.Cos(xz_angle);
-                    float z = -xz_dist * (float)Math.Sin(xz_angle);
-
-                    Vector3 pos = entities[k].position + new Vector3(x,rnd.Next(-(int)entities[k].radius/2,(int)entities[k].radius/2),z);  //v = √ G * M / r
-
-                    float mass = rnd.Next(1,5);
-                    float dist = Vector3.Distance(pos,entities[k].position);
-                    float total_mass = mass + entities[k].mass;
-                    float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);
-
-                    Vector3 vel =  entities[k].velocity + Vector3.Normalize(Vector3.Cross(pos - entities[k].position,up)) * speed;
-                    entities.Add(new Particule(
-                        pos,
-                        vel,
-                        mass,
-                        mass*1.3f,
-                        0.2f,
-                        0.0f
-                    ));
-                    
-                    colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
-                }
+            foreach(Ring ring in RingsList){
+                RingGenerator.CreateRing(univers,entities,colors,ring);
             }
 
         
-            Octree UniversTree = new Octree(32,entities.Count()); 
+            Octree UniversTree = new Octree(16,entities.Count()); 
             UniversTree.inserts(entities.ToArray());
             UniversTree.GenParticulesArray();
 
@@ -318,7 +304,7 @@ namespace ClothSimulator{
 
                 CamObj = output_enties[current_view].position;
                 Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
-                float speed =  (CamObj-CamTarget).Length()/8;
+                float speed =  (CamObj-CamTarget).Length()/6;
 
                 if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=1)){
                     CamTarget += dir*speed;
@@ -357,7 +343,7 @@ namespace ClothSimulator{
                 
 #endregion
 
-                UniversTree = new Octree(32,output_enties.Count());//.Clear(); //= new Octree(32,entities.Count());
+                UniversTree = new Octree(16,output_enties.Count());//.Clear(); //= new Octree(32,entities.Count());
                 UniversTree.inserts(output_enties);
 
                 BeginDrawing();

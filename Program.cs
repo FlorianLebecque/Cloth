@@ -46,7 +46,7 @@ namespace ClothSimulator{
             camera.fovy = 90.0f;                                // Camera field-of-view Y
             camera.projection = CAMERA_PERSPECTIVE;
 
-            SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
+            SetCameraMode(camera, CameraMode.CAMERA_FREE);
             
             SetTargetFPS(120);
 
@@ -59,6 +59,33 @@ namespace ClothSimulator{
             
             Mesh sphere = GenMeshSphere(1f,75,50);
             Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
+
+            Shader shader = LoadShader("resources/shaders/base_lighting.vs","resources/shaders/lighting.fs");
+            int loc_vector_view = GetShaderLocation(shader,"viewPos");
+            int ligth_pos = GetShaderLocation(shader,"lights");
+
+            unsafe
+            {
+                int* locs = (int*)shader.locs;
+                locs[(int)SHADER_LOC_MATRIX_MVP] = GetShaderLocation(shader, "mvp");
+                locs[(int)SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+                locs[(int)SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(shader, "instanceTransform");
+            }
+
+            
+
+            RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
+
+            int ambientLoc = GetShaderLocation(shader, "ambient");
+            RaylibUtils.Utils.SetShaderValue<float[]>(shader,ambientLoc,new float[4]{0.1f, 0.1f, 0.1f, 1.0f},ShaderUniformDataType.SHADER_UNIFORM_VEC4);
+
+            Light[] ltable = new Light[4];
+            ltable[0] = Light.CreateLight(shader,new Vector3(80,0,0),Color.WHITE);
+            ltable[1] = new Light(Vector3.Zero,Color.WHITE);
+            ltable[2] = new Light(Vector3.Zero,Color.WHITE);
+            ltable[3] = new Light(Vector3.Zero,Color.WHITE);
+
+
 /*
             Shader ray_shader = LoadShader("","resources/shaders/raymarching.fs");
             int viewEyeLoc = GetShaderLocation(ray_shader, "viewEye");
@@ -280,7 +307,9 @@ namespace ClothSimulator{
             Color cl = new Color(0,255,0,255);
 
             float runtime = 0;
+            float[] cam_pos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
 
+            ParticuleDrawer.Init(shader);
             while (!WindowShouldClose()) {
 
                 UpdateCamera(ref camera);                
@@ -340,6 +369,10 @@ namespace ClothSimulator{
 
 
                 camera.target = CamTarget;
+                cam_pos[0] = camera.position.X;
+                cam_pos[1] = camera.position.Y;
+                cam_pos[2] = camera.position.Z;
+                RaylibUtils.Utils.SetShaderValue<float[]>(shader,(int)SHADER_LOC_VECTOR_VIEW,cam_pos,ShaderUniformDataType.SHADER_UNIFORM_VEC3 );
 #endregion
                 
 #region SIMULATION                
@@ -374,13 +407,20 @@ namespace ClothSimulator{
                 UniversTree = new Octree(16,output_enties.Count());//.Clear(); //= new Octree(32,entities.Count());
                 UniversTree.inserts(output_enties);
 
+                ltable[0].position = entities[0].position;
+                ltable[0].position.X = 100 * (float)Math.Cos(runtime);
+                ltable[0].position.Z = -100 * (float)Math.Sin(runtime);
+                Light.UpdateLightValues(shader,ltable[0]);
+
                 BeginDrawing();
                     ClearBackground(BLACK);
 
                     BeginMode3D(camera);
-                        ParticuleDrawer.DrawSprings(output_enties,colorArray,drape);   //draw all springs
-                        ParticuleDrawer.DrawSprings(output_enties,colorArray,drape2);   //draw all springs
+                        //ParticuleDrawer.DrawSprings(output_enties,colorArray,drape);   //draw all springs
+                        //ParticuleDrawer.DrawSprings(output_enties,colorArray,drape2);   //draw all springs
                         ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
+
+                        //ParticuleDrawer.DrawInstance(output_enties);
 
                         //debug
                         if(showgrid){

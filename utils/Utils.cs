@@ -119,6 +119,11 @@ namespace RaylibUtils
             Material* materials = (Material*)model.materials.ToPointer();
             materials[materialIndex].shader = shader;
         }
+        
+        public unsafe static void SetMaterialShaderI(Material mat, ref Shader shader){
+            Material* materials = &mat;
+            materials[0].shader = shader;
+        }
 
         public unsafe static Mesh GetMeshFromModel(ref Model model){
             Mesh* mesh = (Mesh*)model.meshes.ToPointer();

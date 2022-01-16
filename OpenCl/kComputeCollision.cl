@@ -154,10 +154,10 @@ int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData
 
         //on check les particules dans la région
         for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].capacity;i++){
-            //if(IsInCube(space,input[i])){
+            if(IsInCube(space,input[i])){
                 particules_queue[particules_counter] = treeData[i];
                 particules_counter++;
-            //}
+            }
         }
 
         if(regions[region_index].subdivided){

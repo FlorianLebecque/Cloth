@@ -186,5 +186,16 @@ namespace Cloth.classes {
             return offset + i + (j*l);
         }
 
+        public static void SetOrbitalSpeed(Tissue t,List<Particule> entities,int target,Univers univers,Vector3 normal){
+            
+
+            for(int i = t.settings.offset; i < t.settings.offset + t.settings.count ; i++){
+                Particule a = entities[i];
+                a.velocity = Particule.GetOrbitalSpeed(entities[i],entities[target],normal,univers);
+                entities[i] = a;
+            }
+
+        }
+
     }
 }

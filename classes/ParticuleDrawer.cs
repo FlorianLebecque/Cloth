@@ -55,4 +55,38 @@ namespace Cloth.classes
         }
 
     }
+
+    public class ParticuleArray{
+
+        public static List<float_3> particule_pos = new();
+        public static List<float> particule_radius = new();
+
+        public static void Generate(List<Particule> entites){
+
+            foreach(Particule p in entites){
+
+
+                particule_pos.Add(new float_3(p.position.X,p.position.Y,p.position.Z));
+                particule_radius.Add(p.radius);
+            }
+
+        }
+
+
+
+    }
+
+    public struct float_3{
+        float x;
+        float y;
+        float z;
+
+        public float_3(float x_,float y_,float z_){
+            x = x_;
+            y = y_;
+            z = z_;
+        }
+
+    }
+
 }

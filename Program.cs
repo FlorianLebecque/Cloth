@@ -40,13 +40,13 @@ namespace ClothSimulator{
             InitWindow(ScreenWidth, ScreenHeight, "Gravity");
 
             Camera3D camera = new Camera3D();
-            camera.position = new Vector3(400f, 100, 0f);    // Camera position
-            camera.target = new Vector3(0.0f, 0.0f, 0.0f);      // Camera looking at point
+            camera.position = new Vector3(2.5f, 400f, 3.0f);    // Camera position
+            camera.target = new Vector3(0.0f, 0.0f, 0.7f);      // Camera looking at point
             camera.up = WORLD_UP;    
             camera.fovy = 90.0f;                                // Camera field-of-view Y
             camera.projection = CAMERA_PERSPECTIVE;
 
-            SetCameraMode(camera, CAMERA_THIRD_PERSON);
+            SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
             
             SetTargetFPS(120);
 
@@ -59,7 +59,21 @@ namespace ClothSimulator{
             
             Mesh sphere = GenMeshSphere(1f,75,50);
             Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
+/*
+            Shader ray_shader = LoadShader("","resources/shaders/raymarching.fs");
+            int viewEyeLoc = GetShaderLocation(ray_shader, "viewEye");
+            int viewCenterLoc = GetShaderLocation(ray_shader, "viewCenter");
+            int runTimeLoc = GetShaderLocation(ray_shader, "runTime");
+            int resolutionLoc = GetShaderLocation(ray_shader, "resolution");
 
+            int spherePosition = GetShaderLocation(ray_shader, "spherePosition");
+            int sphereRadius = GetShaderLocation(ray_shader, "sphereRadius");
+            int sphereCount = GetShaderLocation(ray_shader, "sphereCount");
+
+            float[] res = new float[2]{1920,1080};
+
+            RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,resolutionLoc,res,ShaderUniformDataType.SHADER_UNIFORM_VEC2);
+*/
             //Material mt = LoadMaterialDefault();
             //Shader shader = LoadShader("resources/shaders/base.vs", "resources/shaders/base.fs");
             //int lightPosLoc = GetShaderLocation(shader, "lightPos");
@@ -98,32 +112,39 @@ namespace ClothSimulator{
             Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.0f);
 
             Particule Cloth_Planet   = new Particule(new Vector3(0f, 350, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
-            Particule Orbital_planet = new Particule(new Vector3(250, 0, 0), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
+            Particule Orbital_planet = new Particule(new Vector3(800, 0, 0), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
             Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun,Orbital_planet,WORLD_UP,univers);
 
             entities.Add(Sun);
-            entities.Add(new Particule(new Vector3(0, 0f, 4900), new Vector3(0, 0f, -500), 100000,50f,1.1f,0.0f));      //secondary sun (far away)
+            entities.Add(new Particule(new Vector3(0, 0f, 4900), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f));      //secondary sun (far away)
             entities.Add(Cloth_Planet);   
             entities.Add(Orbital_planet);
 
-                
             colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
             colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Tissue drape2 = new Tissue(new Vector3(400,0,0),15,15,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-            Tissue drape = new Tissue(new Vector3(0,300,2),45,45,3f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Tissue drape2 = new Tissue(new Vector3(400,0,0),30,30,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Tissue drape = new Tissue(new Vector3(0,300,2),30,30,5f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
-            Ring MainRing = new Ring(entities,0,new Vector3(0,1,1), 6,8);
-            MainRing.radius_factor = 0.5f;
+            Tissue.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1,-1));
+
+            Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
+            MainRing.radius_factor = 10f;
+            MainRing.min_mass = 0.1f;
+            MainRing.max_mass = 0.2f;
             Ring SecRing = new Ring(entities,0,new Vector3(0,1,1), 11,12);
             SecRing.nbr_particul = 2000;
-            SecRing.radius_factor = 0.5f;
+            SecRing.min_mass = 0.1f;
+            SecRing.max_mass = 0.2f;
+            SecRing.radius_factor = 10f;
 
             Ring OrbitPlanet = new Ring(entities,3,WORLD_UP, 2,3);
             OrbitPlanet.nbr_particul = 100;
-            OrbitPlanet.radius_factor = 0.2f;
+            OrbitPlanet.min_mass = 0.1f;
+            OrbitPlanet.max_mass = 0.2f;
+            OrbitPlanet.radius_factor = 5f;
 
 
             RingsList.Add(MainRing);
@@ -240,8 +261,13 @@ namespace ClothSimulator{
             /*
                 Main loop
             */
-
-
+/*
+            ParticuleArray.Generate(entities);
+            RaylibUtils.Utils.SetShaderValue<float_3[]>(ray_shader,spherePosition,ParticuleArray.particule_pos.ToArray(),ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+            RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,sphereRadius,ParticuleArray.particule_radius.ToArray(),ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+            RaylibUtils.Utils.SetShaderValue<int>(ray_shader,sphereRadius,entities.Count(),ShaderUniformDataType.SHADER_UNIFORM_INT);
+*/
+            
 
             bool started = false;   // tells if the simulation is started
             int current_view = 0;   // tells witch particule the camera follow
@@ -252,6 +278,8 @@ namespace ClothSimulator{
 
             Cube current_cube = new Cube(entities[current_view].position,80);
             Color cl = new Color(0,255,0,255);
+
+            float runtime = 0;
 
             while (!WindowShouldClose()) {
 
@@ -304,7 +332,7 @@ namespace ClothSimulator{
 
                 CamObj = output_enties[current_view].position;
                 Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
-                float speed =  (CamObj-CamTarget).Length()/6;
+                float speed =  (CamObj-CamTarget).Length()/4;
 
                 if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=1)){
                     CamTarget += dir*speed;
@@ -371,6 +399,20 @@ namespace ClothSimulator{
                         
                         }
                     EndMode3D();
+
+
+                    runtime += GetFrameTime();
+                    float[] cameraPos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
+                    float[] cameraTar = new float[3]{camera.target.X,camera.target.Y,camera.target.Z};
+/*
+                    RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,viewEyeLoc,cameraPos,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+                    RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,viewCenterLoc,cameraTar,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+                    RaylibUtils.Utils.SetShaderValue<float>(ray_shader,runTimeLoc,runtime,ShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+
+                    BeginShaderMode(ray_shader);
+                        DrawRectangle(0,0,ScreenWidth,ScreenHeight,Color.BLACK);
+                    EndShaderMode();
+*/
 
                     if(showgrid){
                         DrawFPS(10, 10);

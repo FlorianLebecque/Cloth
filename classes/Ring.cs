@@ -62,7 +62,7 @@ namespace Cloth.classes {
     public class RingGenerator{
 
         public static Vector3 WORLD_UP = new Vector3(0,1,0);
-        public static Random rnd;
+        public static Random rnd = new Random(2);
         public static void CreateRing(Univers univers,List<Particule> entities,List<Color> colors,Ring ring){
 
             if(rnd == null){

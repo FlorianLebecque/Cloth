@@ -27,6 +27,9 @@ namespace Cloth.classes
         public static Matrix4x4[] transforms;
 
         public static void Init(Shader shader){
+
+            
+
             mat.shader = shader;
             unsafe
             {
@@ -37,10 +40,10 @@ namespace Cloth.classes
         }
         public static void Draw(Particule[] entities,Raylib_cs.Color[] colors){
             
-            //DrawSphere(entities[0].position,entities[0].radius,colors[0]);
-            //DrawSphere(entities[1].position,entities[1].radius,colors[1]);
+            DrawSphere(entities[0].position,entities[0].radius,colors[0]);
+            DrawSphere(entities[1].position,entities[1].radius,colors[1]);
 
-            for(int i = 0; i < entities.Count();i++){
+            for(int i = 2; i < entities.Count();i++){
                 //model.transform = Matrix4x4.Transpose(Matrix4x4.CreateTranslation(entities[i].position));
                 DrawModel(model,entities[i].position,entities[i].radius,colors[i]);
             }

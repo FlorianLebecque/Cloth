@@ -46,8 +46,11 @@ namespace ClothSimulator{
             camera.fovy = 90.0f;                                // Camera field-of-view Y
             camera.projection = CAMERA_PERSPECTIVE;
 
-            SetCameraMode(camera, CameraMode.CAMERA_FREE);
+            RenderTexture2D render_target = LoadRenderTexture(ScreenWidth,ScreenHeight);
+
+            SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
             
+
             SetTargetFPS(120);
 
 #endregion
@@ -62,57 +65,30 @@ namespace ClothSimulator{
 
             Shader shader = LoadShader("resources/shaders/base_lighting.vs","resources/shaders/lighting.fs");
             int loc_vector_view = GetShaderLocation(shader,"viewPos");
-            int ligth_pos = GetShaderLocation(shader,"lights");
+
+            Shader BloomShader = LoadShader("","resources/shaders/bloom.fs");
+            int loc_res = GetShaderLocation(BloomShader,"resolution");
+            RaylibUtils.Utils.SetShaderValue<float[]>(BloomShader,loc_res,new float[2]{ScreenWidth,ScreenHeight},ShaderUniformDataType.SHADER_UNIFORM_VEC2);
+            Rectangle screenRec = new Rectangle(0,0,render_target.texture.width,-render_target.texture.height);
 
             unsafe
             {
                 int* locs = (int*)shader.locs;
-                locs[(int)SHADER_LOC_MATRIX_MVP] = GetShaderLocation(shader, "mvp");
-                locs[(int)SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+                locs[(int)SHADER_LOC_MATRIX_MVP]   = GetShaderLocation(shader, "mvp");
+                locs[(int)SHADER_LOC_VECTOR_VIEW]  = GetShaderLocation(shader, "viewPos");
                 locs[(int)SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(shader, "instanceTransform");
             }
 
-            
-
             RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
 
-            int ambientLoc = GetShaderLocation(shader, "ambient");
-            RaylibUtils.Utils.SetShaderValue<float[]>(shader,ambientLoc,new float[4]{0.1f, 0.1f, 0.1f, 1.0f},ShaderUniformDataType.SHADER_UNIFORM_VEC4);
-
             Light[] ltable = new Light[4];
-            ltable[0] = Light.CreateLight(shader,new Vector3(80,0,0),Color.WHITE);
-            ltable[1] = new Light(Vector3.Zero,Color.WHITE);
-            ltable[2] = new Light(Vector3.Zero,Color.WHITE);
-            ltable[3] = new Light(Vector3.Zero,Color.WHITE);
+            ltable[0] = Light.CreateLight(shader,new Vector3(0,0,0),Color.WHITE);
+            ltable[1] = Light.CreateLight(shader,new Vector3(0,0,0),Color.WHITE);
 
 
-/*
-            Shader ray_shader = LoadShader("","resources/shaders/raymarching.fs");
-            int viewEyeLoc = GetShaderLocation(ray_shader, "viewEye");
-            int viewCenterLoc = GetShaderLocation(ray_shader, "viewCenter");
-            int runTimeLoc = GetShaderLocation(ray_shader, "runTime");
-            int resolutionLoc = GetShaderLocation(ray_shader, "resolution");
+            RaylibUtils.Utils.MeshTangents(ref model);
+            RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
 
-            int spherePosition = GetShaderLocation(ray_shader, "spherePosition");
-            int sphereRadius = GetShaderLocation(ray_shader, "sphereRadius");
-            int sphereCount = GetShaderLocation(ray_shader, "sphereCount");
-
-            float[] res = new float[2]{1920,1080};
-
-            RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,resolutionLoc,res,ShaderUniformDataType.SHADER_UNIFORM_VEC2);
-*/
-            //Material mt = LoadMaterialDefault();
-            //Shader shader = LoadShader("resources/shaders/base.vs", "resources/shaders/base.fs");
-            //int lightPosLoc = GetShaderLocation(shader, "lightPos");
-            //Vector3 lightPos = new Vector3(0.0f, 0.0f, 0.0f );
-            //Texture2D texture = LoadTexture("resources/textures/texel_checker.png");
-
-            //RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
-            //RaylibUtils.Utils.SetMaterialTexture(ref model,0,MATERIAL_MAP_DIFFUSE,ref texture);
-            //RaylibUtils.Utils.MeshTangents(ref model);
-            //RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
-            //RaylibUtils.Utils.SetShaderValue(shader,lightPosLoc,lightPos,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-            
 
 #endregion
 
@@ -287,14 +263,7 @@ namespace ClothSimulator{
 
             /*
                 Main loop
-            */
-/*
-            ParticuleArray.Generate(entities);
-            RaylibUtils.Utils.SetShaderValue<float_3[]>(ray_shader,spherePosition,ParticuleArray.particule_pos.ToArray(),ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-            RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,sphereRadius,ParticuleArray.particule_radius.ToArray(),ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-            RaylibUtils.Utils.SetShaderValue<int>(ray_shader,sphereRadius,entities.Count(),ShaderUniformDataType.SHADER_UNIFORM_INT);
-*/
-            
+            */   
 
             bool started = false;   // tells if the simulation is started
             int current_view = 0;   // tells witch particule the camera follow
@@ -309,7 +278,7 @@ namespace ClothSimulator{
             float runtime = 0;
             float[] cam_pos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
 
-            ParticuleDrawer.Init(shader);
+
             while (!WindowShouldClose()) {
 
                 UpdateCamera(ref camera);                
@@ -372,7 +341,7 @@ namespace ClothSimulator{
                 cam_pos[0] = camera.position.X;
                 cam_pos[1] = camera.position.Y;
                 cam_pos[2] = camera.position.Z;
-                RaylibUtils.Utils.SetShaderValue<float[]>(shader,(int)SHADER_LOC_VECTOR_VIEW,cam_pos,ShaderUniformDataType.SHADER_UNIFORM_VEC3 );
+                RaylibUtils.Utils.SetShaderValue<float[]>(shader,loc_vector_view,cam_pos,ShaderUniformDataType.SHADER_UNIFORM_VEC3 );
 #endregion
                 
 #region SIMULATION                
@@ -407,20 +376,27 @@ namespace ClothSimulator{
                 UniversTree = new Octree(16,output_enties.Count());//.Clear(); //= new Octree(32,entities.Count());
                 UniversTree.inserts(output_enties);
 
-                ltable[0].position = entities[0].position;
-                ltable[0].position.X = 100 * (float)Math.Cos(runtime);
-                ltable[0].position.Z = -100 * (float)Math.Sin(runtime);
+                ltable[0].position = output_enties[0].position;
+                ltable[1].position = output_enties[1].position;
                 Light.UpdateLightValues(shader,ltable[0]);
+                Light.UpdateLightValues(shader,ltable[1]);
+
+                BeginTextureMode(render_target);
+                    BeginMode3D(camera);
+                        ClearBackground(BLACK);
+                        ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
+                    EndMode3D();
+                EndTextureMode();
 
                 BeginDrawing();
                     ClearBackground(BLACK);
+                    
+                    BeginShaderMode(BloomShader);
+                        DrawTextureRec(render_target.texture, screenRec, Vector2.Zero, Color.BLACK);
+                    EndShaderMode();
 
                     BeginMode3D(camera);
-                        //ParticuleDrawer.DrawSprings(output_enties,colorArray,drape);   //draw all springs
-                        //ParticuleDrawer.DrawSprings(output_enties,colorArray,drape2);   //draw all springs
-                        ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
 
-                        //ParticuleDrawer.DrawInstance(output_enties);
 
                         //debug
                         if(showgrid){
@@ -444,15 +420,7 @@ namespace ClothSimulator{
                     runtime += GetFrameTime();
                     float[] cameraPos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
                     float[] cameraTar = new float[3]{camera.target.X,camera.target.Y,camera.target.Z};
-/*
-                    RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,viewEyeLoc,cameraPos,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-                    RaylibUtils.Utils.SetShaderValue<float[]>(ray_shader,viewCenterLoc,cameraTar,ShaderUniformDataType.SHADER_UNIFORM_VEC3);
-                    RaylibUtils.Utils.SetShaderValue<float>(ray_shader,runTimeLoc,runtime,ShaderUniformDataType.SHADER_UNIFORM_FLOAT);
 
-                    BeginShaderMode(ray_shader);
-                        DrawRectangle(0,0,ScreenWidth,ScreenHeight,Color.BLACK);
-                    EndShaderMode();
-*/
 
                     if(showgrid){
                         DrawFPS(10, 10);

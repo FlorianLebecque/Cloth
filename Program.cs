@@ -18,6 +18,7 @@ using static Raylib_cs.MaterialMapIndex;
 
 using Cloth.classes.tree;
 
+
 namespace ClothSimulator{
 
     class Program{
@@ -34,6 +35,7 @@ namespace ClothSimulator{
                 Raylib initialisation
             */
 
+
             SetConfigFlags(FLAG_MSAA_4X_HINT);
             SetConfigFlags(FLAG_WINDOW_HIGHDPI);
 
@@ -45,6 +47,12 @@ namespace ClothSimulator{
             camera.up = WORLD_UP;    
             camera.fovy = 90.0f;                                // Camera field-of-view Y
             camera.projection = CAMERA_PERSPECTIVE;
+            
+            
+
+            double top = 0.01*Math.Tan(camera.fovy*0.5*DEG2RAD);
+            double right = top*(16/9);
+            MatrixFrustum(-right, right, -top, top, 0.01, 5000);
 
             SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
             
@@ -111,12 +119,16 @@ namespace ClothSimulator{
 
             Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.0f);
 
-            Particule Cloth_Planet   = new Particule(new Vector3(0f, 350, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
-            Particule Orbital_planet = new Particule(new Vector3(800, 0, 0), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
-            Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun,Orbital_planet,WORLD_UP,univers);
+            Particule Sun2 = new Particule(new Vector3(0, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f);
+
+            Particule Cloth_Planet   = new Particule(new Vector3(0f, 200, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
+            Cloth_Planet.velocity = Particule.GetOrbitalSpeed(Sun,Cloth_Planet,new Vector3(-1,0,0),univers);
+
+            Particule Orbital_planet = new Particule(new Vector3(0, 0, 4500), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
+            Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun2,Orbital_planet,WORLD_UP,univers);
 
             entities.Add(Sun);
-            entities.Add(new Particule(new Vector3(0, 0f, 4900), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f));      //secondary sun (far away)
+            entities.Add(Sun2);      //secondary sun (far away)
             entities.Add(Cloth_Planet);   
             entities.Add(Orbital_planet);
 
@@ -126,9 +138,10 @@ namespace ClothSimulator{
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
             Tissue drape2 = new Tissue(new Vector3(400,0,0),30,30,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-            Tissue drape = new Tissue(new Vector3(0,300,2),30,30,5f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Tissue drape = new Tissue(new Vector3(0,-200,2),30,30,5f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
             Tissue.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1,-1));
+            Tissue.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
 
             Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
             MainRing.radius_factor = 10f;
@@ -140,8 +153,8 @@ namespace ClothSimulator{
             SecRing.max_mass = 0.2f;
             SecRing.radius_factor = 10f;
 
-            Ring OrbitPlanet = new Ring(entities,3,WORLD_UP, 2,3);
-            OrbitPlanet.nbr_particul = 100;
+            Ring OrbitPlanet = new Ring(entities,1,WORLD_UP, 2,3);
+            OrbitPlanet.nbr_particul = 200;
             OrbitPlanet.min_mass = 0.1f;
             OrbitPlanet.max_mass = 0.2f;
             OrbitPlanet.radius_factor = 5f;

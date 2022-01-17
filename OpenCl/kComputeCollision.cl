@@ -127,7 +127,7 @@ bool Intersect(struct Cube c1,struct Cube c2){
     bool IsY = ((c1.center.Y + c1.size) >= (c2.center.Y - c2.size)) &&  ((c1.center.Y - c1.size) <= (c2.center.Y + c2.size));
     bool IsZ = ((c1.center.Z + c1.size) >= (c2.center.Z - c2.size)) &&  ((c1.center.Z - c1.size) <= (c2.center.Z + c2.size));
 
-    return  IsX && IsY && IsZ;
+    return IsX && IsY && IsZ;
 }
 
 bool IsInCube(struct Cube c, struct Particule_obj p){
@@ -144,7 +144,7 @@ int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData
     int children[10000];    //array of the regions indexes (only the one we should check)
     children[0] = 0;        //set the first region to check (the one whose index is 0)
 
-    int region_cursor  = 0; // cursor who give the position in the children queue
+    int region_cursor = 0;  // cursor who give the position in the children queue
     int region_counter = 1; // number of element in the queue
 
     int particules_counter = 0; //number and index of the cursor in the queue of particule
@@ -154,10 +154,10 @@ int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData
 
         //on check les particules dans la région
         for(int i = regions[region_index].offset; i < regions[region_index].offset + regions[region_index].capacity;i++){
-            if(IsInCube(space,input[i])){
+            //if(IsInCube(space,input[i])){
                 particules_queue[particules_counter] = treeData[i];
                 particules_counter++;
-            }
+            //}
         }
 
         if(regions[region_index].subdivided){
@@ -224,18 +224,17 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
     int total = get_global_size(0);
 	int index = get_global_id(0);
 
-    output[index] = input[index];   //copie la particule dans le deuxieme buffer
+    output[index] = input[index];
 
-    int particules[10000];          //queue des particules a vérifier
+    int particules[10000];
 
-    struct Cube space;                      //definition de l'espace autour de la particule a vérifier
+    struct Cube space;
     space.center = input[index].position;
     space.size = 100;
     
-    int nbr_particule = getParticules(treeSettings,treeRegions,treeData,input,space,particules);    //récupération des particules a vérifier
+    int nbr_particule = getParticules(treeSettings,treeRegions,treeData,input,space,particules);
     //nbr_particule = -1;
 
-        //check la collision avec toutes les particules de la queue
     for(int k = 0; k <= nbr_particule;k++){
         int i = particules[k];
         if(i != index){
@@ -250,39 +249,37 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
                 struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
                 struct Vector3 ExitVector = V3fmul(normal,((input[index].radius+input[i].radius)-dist));
 
-                struct Vector3 VELn = V3fmul(normal,V3Dot(normal,input[index].velocity));   //normal velocity
-                struct Vector3 VELt = V3Sub(input[index].velocity,VELn);                    //tengent velocity
+                struct Vector3 VELn = V3fmul(normal,V3Dot(normal,input[index].velocity));
+                struct Vector3 VELt = V3Sub(input[index].velocity,VELn);
 
-                    //speed adjustement
-                float ViSO1 = V3Dot(normal,input[index].velocity) * bounciness; //Particul 1 initial velocity
-                float ViSO2 = V3Dot(input[i].velocity,normal) * bounciness;     //Particul 2 initial velocity
+                //speed adjustement
+                float ViSO1 = V3Dot(normal,input[index].velocity) * bounciness;
+                float ViSO2 = V3Dot(input[i].velocity,normal) * bounciness;
 
-                struct Vector3 normalVelocity = V3fmul(normal,ViSO1);   //Adjusted normal velocity
+                struct Vector3 normalVelocity = V3fmul(normal,ViSO1);
 
-                    //resistance force based on tengent velocity
                 float resitance =  -V3Length(VELt)*(input[index].roughness);
                 struct Vector3 resitanceForce = V3fmul(V3Normalize(VELt),resitance);
 
-                
-                output[index].velocity = V3Sub(output[index].velocity,normalVelocity);  //start from a neutral velocity in the normal axis
-                float VfSO1 = ViSO2;                                                    //set the velocity if equal mass
-                if(input[index].mass != input[i].mass){                                 //set velocity if not equal mass
+                output[index].velocity = V3Sub(output[index].velocity,normalVelocity);
+                float VfSO1 = ViSO2;
+                if(input[index].mass != input[i].mass){
                     VfSO1 = (((input[index].mass-input[i].mass)/(totalMass))  * ViSO1) + (((2*input[i].mass)/(totalMass))*ViSO2);
                 }
 
-                output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));                //apply normal velocity correction
-                output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,uni[0].dt));    //apply tengent velocity correction
+                output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));
+                output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,uni[0].dt));
                 
 
                 //position adjustement
-                output[index].position = V3Sub(output[index].position,V3fmul(ExitVector,(1-totalFactor)));  //move the particule to stop the intersection (the movement is based on the mass)
+                output[index].position = V3Sub(output[index].position,V3fmul(ExitVector,(1-totalFactor)));
+
             }
 
         }
 
     }
 
-        //check if we get out of the octree boundary (crap code)
     struct Vector3 center;
     center.X = center.Y = center.Z = 0;
     struct Cube c;
@@ -295,5 +292,6 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
         output[index].velocity.X = - output[index].velocity.X;
         output[index].velocity.Y = - output[index].velocity.Y;
         output[index].velocity.Z = - output[index].velocity.Z;
+        
     }
 };

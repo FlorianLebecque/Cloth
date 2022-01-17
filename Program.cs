@@ -140,8 +140,9 @@ namespace ClothSimulator{
             Tissue drape2 = new Tissue(new Vector3(400,0,0),30,30,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
             Tissue drape = new Tissue(new Vector3(0,-200,2),30,30,5f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
-            Tissue.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1,-1));
+
             Tissue.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
+            Tissue.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1.5f,-1));
 
             Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
             MainRing.radius_factor = 10f;

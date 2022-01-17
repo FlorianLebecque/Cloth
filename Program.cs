@@ -52,11 +52,15 @@ namespace ClothSimulator{
 
             double top = 0.01*Math.Tan(camera.fovy*0.5*DEG2RAD);
             double right = top*(16/9);
-            MatrixFrustum(-right, right, -top, top, 0.01, 5000);
+            
 
+            
             RenderTexture2D render_target = LoadRenderTexture(ScreenWidth,ScreenHeight);
 
             SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
+            
+            Rlgl.rlSetMatrixProjection(MatrixPerspective(0.1, ((double)GetScreenWidth()/(double)GetScreenHeight()), 0.1, 5000));
+
             
 
             SetTargetFPS(120);
@@ -67,40 +71,42 @@ namespace ClothSimulator{
             /*
                 Model initialisation
             */
+            Model skyBox = LoadModelFromMesh(GenMeshCube(1,1,1));
+            Shader skyShader = LoadShader("resources/shaders/skybox.vs","resources/shaders/skybox.fs");
             
-            Mesh sphere = GenMeshSphere(1f,75,50);
+
+            Texture2D skyTexture = LoadTexture("resources/textures/sky3.png");//LoadTextureCubemap(img,CubemapLayout.CUBEMAP_LAYOUT_AUTO_DETECT);
+
+            RaylibUtils.Utils.SetMaterialShader(ref skyBox,0,ref skyShader);
+            RaylibUtils.Utils.SetMaterialTexture(ref skyBox,0,MATERIAL_MAP_DIFFUSE,ref skyTexture);
+            RaylibUtils.Utils.MeshTangents(ref skyBox);
+            RaylibUtils.Utils.SetShaderLocation(ref skyShader,SHADER_LOC_MATRIX_MODEL,"matModel");
+
+            Mesh sphere = GenMeshSphere(1f,20,20);
             Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
 
             Shader shader = LoadShader("resources/shaders/base_lighting.vs","resources/shaders/lighting.fs");
             int loc_vector_view = GetShaderLocation(shader,"viewPos");
 
-            Shader BloomShader = LoadShader("","resources/shaders/bloom.fs");
-            int loc_res = GetShaderLocation(BloomShader,"resolution");
-            RaylibUtils.Utils.SetShaderValue<float[]>(BloomShader,loc_res,new float[2]{ScreenWidth,ScreenHeight},ShaderUniformDataType.SHADER_UNIFORM_VEC2);
-            Rectangle screenRec = new Rectangle(0,0,render_target.texture.width,-render_target.texture.height);
-
-            unsafe
-            {
-                int* locs = (int*)shader.locs;
-                locs[(int)SHADER_LOC_MATRIX_MVP]   = GetShaderLocation(shader, "mvp");
-                locs[(int)SHADER_LOC_VECTOR_VIEW]  = GetShaderLocation(shader, "viewPos");
-                locs[(int)SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(shader, "instanceTransform");
-            }
 
             RaylibUtils.Utils.SetMaterialShader(ref model,0,ref shader);
+            RaylibUtils.Utils.MeshTangents(ref model);
+            RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
 
             Light[] ltable = new Light[4];
             ltable[0] = Light.CreateLight(shader,new Vector3(0,0,0),Color.WHITE);
             ltable[1] = Light.CreateLight(shader,new Vector3(0,0,0),Color.WHITE);
 
 
-            RaylibUtils.Utils.MeshTangents(ref model);
-            RaylibUtils.Utils.SetShaderLocation(ref shader,SHADER_LOC_MATRIX_MODEL,"matModel");
-
+            Shader BloomShader = LoadShader("","resources/shaders/bloom.fs");
+            int loc_res = GetShaderLocation(BloomShader,"resolution");
+            RaylibUtils.Utils.SetShaderValue<float[]>(BloomShader,loc_res,new float[2]{ScreenWidth,ScreenHeight},ShaderUniformDataType.SHADER_UNIFORM_VEC2);
+            Rectangle screenRec = new Rectangle(0,0,render_target.texture.width,-render_target.texture.height);
 
 #endregion
 
 #region UNIVERS
+
             /*
                 ---------------------------------------------------------------------------------------------
                         Univer initialisation
@@ -112,7 +118,7 @@ namespace ClothSimulator{
                 ---------------------------------------------------------------------------------------------
             */
 
-            Univers univers = new Univers(10f,0.01f);
+            Univers univers = new Univers(20f,0.01f);
 
             ParticuleDrawer.model = model;
             Random rnd = new Random(2);
@@ -122,12 +128,12 @@ namespace ClothSimulator{
 
             Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.0f);
 
-            Particule Sun2 = new Particule(new Vector3(0, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f);
+            Particule Sun2 = new Particule(new Vector3(20, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f);
 
             Particule Cloth_Planet   = new Particule(new Vector3(0f, 200, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
             Cloth_Planet.velocity = Particule.GetOrbitalSpeed(Sun,Cloth_Planet,new Vector3(-1,0,0),univers);
 
-            Particule Orbital_planet = new Particule(new Vector3(0, 0, 4500), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
+            Particule Orbital_planet = new Particule(new Vector3(20, 0, 4500), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
             Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun2,Orbital_planet,WORLD_UP,univers);
 
             entities.Add(Sun);
@@ -181,7 +187,6 @@ namespace ClothSimulator{
             Particule[] output_enties = entities.ToArray();
                 //get an array of colors
             Raylib_cs.Color[] colorArray = colors.ToArray();
-
 
 #endregion
 
@@ -398,24 +403,34 @@ namespace ClothSimulator{
                 BeginTextureMode(render_target);
                     BeginMode3D(camera);
                         ClearBackground(BLACK);
+
+                        Rlgl.rlDisableBackfaceCulling();
+                            Rlgl.rlDisableDepthMask();
+                                DrawModel(skyBox, camera.position, 750.0f, Color.SKYBLUE);
+                            Rlgl.rlEnableBackfaceCulling();
+                        Rlgl.rlEnableDepthMask();
+                        
                         ParticuleDrawer.Draw(output_enties,colorArray);     //draw all particule
                     EndMode3D();
                 EndTextureMode();
 
                 BeginDrawing();
+
                     ClearBackground(BLACK);
                     
                     BeginShaderMode(BloomShader);
                         DrawTextureRec(render_target.texture, screenRec, Vector2.Zero, Color.BLACK);
                     EndShaderMode();
 
-                    BeginMode3D(camera);
 
+                    if(showgrid){
 
-                        //debug
-                        if(showgrid){
+                        BeginMode3D(camera);
+                        
+                            
+
                             UniversTree.Draw();
-                            //DrawGrid(100, 50.0f);
+                    
 
                             //draw velocity and acceleration vector for selected particule
                             DrawLine3D(output_enties[current_view].position,output_enties[current_view].position + (Vector3.Add(output_enties[current_view].velocity,Vector3.Normalize(output_enties[current_view].velocity) * output_enties[current_view].radius)),Color.DARKPURPLE);
@@ -427,16 +442,8 @@ namespace ClothSimulator{
 
                             current_cube.Draw(cl);
                         
-                        }
-                    EndMode3D();
+                        EndMode3D();
 
-
-                    runtime += GetFrameTime();
-                    float[] cameraPos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
-                    float[] cameraTar = new float[3]{camera.target.X,camera.target.Y,camera.target.Z};
-
-
-                    if(showgrid){
                         DrawFPS(10, 10);
                         DrawText(univers.dt.ToString("F4"),75,50,20,Color.DARKGREEN);
                         DrawText(current_view.ToString(),10,50,20,Color.DARKGREEN);
@@ -448,11 +455,8 @@ namespace ClothSimulator{
                         
                         DrawText(UniversTree.capacity.ToString("F3"),10,150,20,Color.DARKGREEN);
                         DrawText(UniversTree.particulCount.ToString(),10,175,20,Color.DARKGREEN);
-                        //DrawText(current_view.ToString(),10,50,175,Color.DARKGREEN);
                     }
-
-                    
-
+ 
                 EndDrawing();
             }
 

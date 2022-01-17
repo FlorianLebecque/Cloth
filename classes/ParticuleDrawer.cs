@@ -20,29 +20,50 @@ namespace Cloth.classes
         public static Model model;
         public bool showDrapeParticul = true;
 
+        public static Mesh m = GenMeshSphere(1f,75,50);
+
+        public static Material mat = LoadMaterialDefault();
+        
+        public static Matrix4x4[] transforms;
+
+        public static void Init(Shader shader){
+
+            
+
+            mat.shader = shader;
+            unsafe
+            {
+                MaterialMap* maps = (MaterialMap*)mat.maps.ToPointer();
+                maps[(int)MATERIAL_MAP_DIFFUSE].color = Color.GRAY;
+            }
+            //RaylibUtils.Utils.SetMaterialShader(ref model,(int)MaterialMapIndex.MATERIAL_MAP_DIFFUSE,ref shader);
+        }
         public static void Draw(Particule[] entities,Raylib_cs.Color[] colors){
             
-            for(int i = 0; i < entities.Count();i++){
+            DrawSphere(entities[0].position,entities[0].radius,colors[0]);
+            DrawSphere(entities[1].position,entities[1].radius,colors[1]);
+
+            for(int i = 2; i < entities.Count();i++){
+                //model.transform = Matrix4x4.Transpose(Matrix4x4.CreateTranslation(entities[i].position));
                 DrawModel(model,entities[i].position,entities[i].radius,colors[i]);
             }
         }
 
-        public static void Draw(Particule[] entities,Raylib_cs.Color[] colors,Tissue drape){
-            
-            for(int i = 0; i < entities.Count();i++){
-
-
-                bool show = true;
-                foreach(Spring sp in drape.springs){
-                    if((sp.particul_1 == i)||(sp.particul_2 == i)){
-                        show = false;
-                        break;
-                    }
-                }
-                
-                if(show)
-                    DrawModel(model,entities[i].position,entities[i].radius,colors[i]);
+        public static void DrawInstance(Particule[] entities){
+            if(transforms == null){
+                transforms = new Matrix4x4[entities.Count()];
             }
+
+            //DrawSphere(entities[0].position,entities[0].radius,Color.GOLD);
+
+            for(int i = 0 ; i < entities.Count(); i++){
+
+                Matrix4x4 scale = Matrix4x4.CreateScale(Vector3.One * entities[i].radius);
+
+                transforms[i] = Matrix4x4.Transpose(scale * Matrix4x4.CreateTranslation(entities[i].position));
+            }
+
+            DrawMeshInstanced(m,mat,transforms,entities.Count());
         }
 
         public static void DrawSprings(Particule[] entities,Raylib_cs.Color[] colors,Tissue drape){
@@ -52,39 +73,6 @@ namespace Cloth.classes
 
                 }
             }
-        }
-
-    }
-
-    public class ParticuleArray{
-
-        public static List<float_3> particule_pos = new();
-        public static List<float> particule_radius = new();
-
-        public static void Generate(List<Particule> entites){
-
-            foreach(Particule p in entites){
-
-
-                particule_pos.Add(new float_3(p.position.X,p.position.Y,p.position.Z));
-                particule_radius.Add(p.radius);
-            }
-
-        }
-
-
-
-    }
-
-    public struct float_3{
-        float x;
-        float y;
-        float z;
-
-        public float_3(float x_,float y_,float z_){
-            x = x_;
-            y = y_;
-            z = z_;
         }
 
     }

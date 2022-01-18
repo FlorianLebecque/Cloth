@@ -24,11 +24,9 @@ namespace Cloth.classes
 
         public static Material mat = LoadMaterialDefault();
         
-        public static Matrix4x4[] transforms;
+        public static Matrix4x4[] transforms = new Matrix4x4[1];
 
         public static void Init(Shader shader){
-
-            
 
             mat.shader = shader;
             unsafe

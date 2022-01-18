@@ -166,5 +166,10 @@ namespace Simulator {
             }
         }
 
+        public void Run(){
+            CheckControl();
+            Simulate();
+        }
+
     }
 }

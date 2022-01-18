@@ -43,26 +43,25 @@ class Program{
 
         UniversCreator.CreateUnivers1(WORLD_UP);
 
-        RaylibRenderer RR = new RaylibRenderer(camera,UniversCreator.colors);
+        RaylibRenderer renderer = new RaylibRenderer(camera,UniversCreator.colors);
 
-        UniverSimulation us = new UniverSimulation(UniversCreator.univers);
+        UniverSimulation univer_simulation = new UniverSimulation(UniversCreator.univers);
 
-        us.Init(UniversCreator.entities,UniversCreator.clothList);
+        univer_simulation.Init(UniversCreator.entities,UniversCreator.clothList);
 
 
         /*
             Main loop
         */   
         while (!WindowShouldClose()) {
-            RR.UpdateCamera();
+            renderer.UpdateCamera();
 
-            us.CheckControl();
-            us.Simulate();
+            univer_simulation.Run();
             
-            RR.CheckControl(us);
-            RR.UpdateLight(us);
+            renderer.CheckControl(univer_simulation);
+            renderer.UpdateLight(univer_simulation);
 
-            RR.Draw(us);
+            renderer.Draw(univer_simulation);
         }
 
     }

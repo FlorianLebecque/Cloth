@@ -114,7 +114,7 @@ namespace Simulator {
             if(!started)
                 return;
                 
-            UniversTree = new Octree(16,UniversTree.particulCount);
+            UniversTree = new Octree(16,output_enties.Count());
             UniversTree.inserts(output_enties);
             UniversTree.GenParticulesArray();
 

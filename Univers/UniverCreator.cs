@@ -14,6 +14,7 @@ namespace Univers {
         public static List<Raylib_cs.Color> colors = new();
         public static List<Cloth> clothList = new();
 
+    
         public static void CreateUnivers1(Vector3 WORLD_UP){
 
             Random rnd = new Random(2);
@@ -82,6 +83,42 @@ namespace Univers {
             
             clothList.Add(drape);
             clothList.Add(drape2);
+        }
+
+        public static void CreateUnivers2(Vector3 WORLD_UP){
+
+            Random rnd = new Random(2);
+            
+
+            RingGenerator.rnd = rnd;
+
+            univers = new UniversSettings(100f,0.01f);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+            Particule earth = new Particule(
+                new Vector3(0,-200,0),Vector3.Zero,
+                100000f,100,0,1
+            );
+
+            Particule mountain = new Particule(
+                new Vector3(0,200,0),Vector3.Zero,
+                0,50,0,1
+            );
+
+            entities.Add(mountain);
+
+            entities.Add(earth);
+            colors.Add(new Color(255,255,255,255));
+            colors.Add(new Color(255,255,255,255));
+
+            Cloth c = new Cloth(
+                new Vector3(0,400,0),50,50,4,1,entities,colors,new Color(0,0,120,255)
+            );
+
+            clothList.Add(c);
+
         }
 
     }

@@ -41,7 +41,7 @@ class Program{
         SetTargetFPS(120);
 
 
-        UniversCreator.CreateUnivers1(WORLD_UP);
+        UniversCreator.CreateUnivers2(WORLD_UP);
 
         RaylibRenderer renderer = new RaylibRenderer(camera,UniversCreator.colors);
 

@@ -247,8 +247,20 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
                 float bounciness  = (input[index].bounciness + input[i].bounciness) / 2;
                 float roughness   = (input[index].roughness + input[i].roughness) / 2;
 
-                float inv_m1 = 1 / input[index].mass;
-                float inv_m2 = 1 / input[i].mass;
+                float inv_m1 = 0;
+                if(input[index].mass != 0){
+                    inv_m1 = 1 / input[index].mass;
+                }else{
+                    totalFactor = 1;
+                }
+                 
+                float inv_m2 = 0;
+                if(input[i].mass != 0){
+                    inv_m2 = 1 / input[i].mass;
+
+                }else{
+                    totalFactor = 0;
+                }
 
                 struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
                 struct Vector3 VELrelativ   = V3Sub(input[index].velocity,input[i].velocity); //relative speed
@@ -277,7 +289,7 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
                 output[index].velocity = V3Sub(output[index].velocity,normalVelocity);
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));
                 */
-                float resitance =  -V3Length(VELrelativ_t) * roughness / input[index].mass;
+                float resitance =  -V3Length(VELrelativ_t) * roughness * inv_m1;
                 struct Vector3 resitanceForce = V3fmul(V3Normalize(VELrelativ_t),resitance);
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,uni[0].dt));
                 

@@ -123,8 +123,8 @@ __kernel void ComputeSpringForce(__global struct Particule_obj *input,__global s
 
     float damping_force_1 = in_direction_velocity_1 * springs[index].cd * springs[index].broken;
 
-    if(damping_force_1 > 2*spring_force){
-        damping_force_1 = 2*spring_force;
+    if(damping_force_1 > spring_force){
+        damping_force_1 = spring_force;
     }
 
     struct Vector3 hooks_p1   = V3fmul(normal,spring_force);

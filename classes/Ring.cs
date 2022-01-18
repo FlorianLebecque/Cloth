@@ -37,8 +37,8 @@ namespace Cloth.classes {
 
             radius_factor = 1.3f;
 
-            bounciness = 0.9f;
-            roughness = 0f;
+            bounciness = 0.5f;
+            roughness = 0.1f;
         }
         public Ring(int target_,Vector3 normal_,float min_distance_,float max_distance_){
             target = target_;
@@ -53,8 +53,8 @@ namespace Cloth.classes {
 
             radius_factor = 1.3f;
 
-            bounciness = 0.9f;
-            roughness = 0f;
+            bounciness = 0.5f;
+            roughness = 0.1f;
         }
 
     }

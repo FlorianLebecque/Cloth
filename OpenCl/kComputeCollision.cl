@@ -245,33 +245,45 @@ __kernel void ComputeCollision(__global struct Univers *uni,__global struct Part
                 float totalMass   = input[index].mass + input[i].mass;
                 float totalFactor = input[index].mass / totalMass;
                 float bounciness  = (input[index].bounciness + input[i].bounciness) / 2;
+                float roughness   = (input[index].roughness + input[i].roughness) / 2;
+
+                float inv_m1 = 1 / input[index].mass;
+                float inv_m2 = 1 / input[i].mass;
 
                 struct Vector3 normal = V3Normalize(V3Sub(input[i].position,input[index].position));
-                struct Vector3 ExitVector = V3fmul(normal,((input[index].radius+input[i].radius)-dist));
+                struct Vector3 VELrelativ   = V3Sub(input[index].velocity,input[i].velocity); //relative speed
 
-                struct Vector3 VELn = V3fmul(normal,V3Dot(normal,input[index].velocity));
-                struct Vector3 VELt = V3Sub(input[index].velocity,VELn);
+                float sepVel = V3Dot(normal,VELrelativ);
+                float new_sepvel = sepVel * bounciness;
+                float vsep_diff  = new_sepvel + sepVel;
+                float impulse = vsep_diff / (inv_m1 + inv_m2);
 
+                struct Vector3 impulseVec = V3fmul(normal,impulse);
+
+                output[index].velocity = V3Sub(output[index].velocity,V3fmul(impulseVec,inv_m1));
+
+                struct Vector3 VELrelativ_n = V3fmul(normal,V3Dot(normal,VELrelativ));        //normal relative speed
+                struct Vector3 VELrelativ_t = V3Sub(VELrelativ,VELrelativ_n);                 //tengent relative speed
+
+                /*
                 //speed adjustement
                 float ViSO1 = V3Dot(normal,input[index].velocity) * bounciness;
                 float ViSO2 = V3Dot(input[i].velocity,normal) * bounciness;
 
-                struct Vector3 normalVelocity = V3fmul(normal,ViSO1);
+                float VfSO1 = (((input[index].mass-input[i].mass)/(totalMass))  * ViSO1) + (((2*input[i].mass)/(totalMass))*ViSO2);
 
-                float resitance =  -V3Length(VELt)*(input[index].roughness);
-                struct Vector3 resitanceForce = V3fmul(V3Normalize(VELt),resitance);
-
+                struct Vector3 normalVelocity = V3fmul(normal, ViSO1);
+                
                 output[index].velocity = V3Sub(output[index].velocity,normalVelocity);
-                float VfSO1 = ViSO2;
-                if(input[index].mass != input[i].mass){
-                    VfSO1 = (((input[index].mass-input[i].mass)/(totalMass))  * ViSO1) + (((2*input[i].mass)/(totalMass))*ViSO2);
-                }
-
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(normal,VfSO1));
+                */
+                float resitance =  -V3Length(VELrelativ_t) * roughness / input[index].mass;
+                struct Vector3 resitanceForce = V3fmul(V3Normalize(VELrelativ_t),resitance);
                 output[index].velocity = V3Add(output[index].velocity,V3fmul(resitanceForce,uni[0].dt));
                 
 
                 //position adjustement
+                struct Vector3 ExitVector = V3fmul(normal,((input[index].radius+input[i].radius)-dist));
                 output[index].position = V3Sub(output[index].position,V3fmul(ExitVector,(1-totalFactor)));
 
             }

@@ -126,9 +126,8 @@ namespace ClothSimulator{
             List<Ring> RingsList         = new();
             List<Raylib_cs.Color> colors = new();
 
-            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.0f);
-
-            Particule Sun2 = new Particule(new Vector3(20, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,1.1f,0.0f);
+            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.5f);
+            Particule Sun2 = new Particule(new Vector3(20, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,0.95f,0.5f);
 
             Particule Cloth_Planet   = new Particule(new Vector3(0f, 200, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
             Cloth_Planet.velocity = Particule.GetOrbitalSpeed(Sun,Cloth_Planet,new Vector3(-1,0,0),univers);
@@ -146,8 +145,8 @@ namespace ClothSimulator{
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Tissue drape2 = new Tissue(new Vector3(400,0,0),30,30,5f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-            Tissue drape = new Tissue(new Vector3(0,-200,2),30,30,5f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Tissue drape2 = new Tissue(new Vector3(400,0,0),30,30,4f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Tissue drape = new Tissue(new Vector3(0,-200,2),30,30,4f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
 
             Tissue.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
@@ -294,7 +293,6 @@ namespace ClothSimulator{
             Cube current_cube = new Cube(entities[current_view].position,80);
             Color cl = new Color(0,255,0,255);
 
-            float runtime = 0;
             float[] cam_pos = new float[3]{camera.position.X,camera.position.Y,camera.position.Z};
 
 

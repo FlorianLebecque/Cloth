@@ -53,9 +53,9 @@ namespace Cloth.classes {
 
 
 
-            float k1 = 90;
-            float k2 = 75;
-            float k3 = 50;
+            float k1 = 100;
+            float k2 = 150;
+            float k3 = 200;
 
             float cd = 2f;
 
@@ -144,34 +144,38 @@ namespace Cloth.classes {
                         spring_list.Add(new Spring(sqrt_2*rest_distance,max_distance,k2,index,dr_index,cd));
                     } 
 
-                    int dl_i = i - 2; //left
-                    int dr_i = i + 2; //right
-                    int du_j = j - 2; //up
-                    int dd_j = j + 2; //down
+                    int dist = 2;
+
+                    int dl_i = i - dist; //left
+                    int dr_i = i + dist; //right
+                    int du_j = j - dist; //up
+                    int dd_j = j + dist; //down
 
                     //left double
                     if ( dl_i >= 0){
                         int left_index = GetIndex(offset,dl_i,j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,left_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,left_index,2f));
                     }
 
                     //right double
                     if ( dr_i < n){
                         int right_index = GetIndex(offset,dr_i,j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,right_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,right_index,2f));
                     }
 
                     //up double
                     if ( du_j >= 0){
                         int up_index = GetIndex(offset,i,du_j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,up_index,2f));   
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,up_index,2f));   
                     }
 
                     //down double
                     if ( dd_j < m){
                         int down_index = GetIndex(offset,i,dd_j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,down_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,down_index,2f));
                     }
+
+                    
 
                 }
             }

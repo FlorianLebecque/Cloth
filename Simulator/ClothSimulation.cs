@@ -33,8 +33,8 @@ namespace Simulator {
             computeGPU.Upload<Spring>(bSprings,c.springs);
             computeGPU.Upload<Cloth_settings>(bClothSettings,new Cloth_settings[1]{c.settings});
 
-            kComputeSpringForce    = computeGPU.CreateKernel("OpenCl/kComputeSpringForce.cl","ComputeSpringForce");
-            kComputeSpring         = computeGPU.CreateKernel("OpenCl/kComputeSpring.cl","ComputeSpring");
+            kComputeSpringForce    = computeGPU.CreateKernel("resources/kernels/kComputeSpringForce.cl","ComputeSpringForce");
+            kComputeSpring         = computeGPU.CreateKernel("resources/kernels/kComputeSpring.cl","ComputeSpring");
 
             computeGPU.SetKernelArg(kComputeSpringForce,0,readParticuleBuffer);
             computeGPU.SetKernelArg(kComputeSpringForce,1,bSprings);

@@ -51,10 +51,10 @@ namespace Simulator {
 
             computeGPU = new();
 
-            kComputeGravity     = computeGPU.CreateKernel("OpenCl/kComputeGravity.cl","ComputeGravity");
-            kComputeVel         = computeGPU.CreateKernel("OpenCl/kComputeVel.cl","ComputeVel");
-            kComputePos         = computeGPU.CreateKernel("OpenCl/kComputePos.cl","ComputePos");
-            kComputeCollision   = computeGPU.CreateKernel("OpenCl/kComputeCollision.cl","ComputeCollision");
+            kComputeGravity     = computeGPU.CreateKernel("resources/kernels/kComputeGravity.cl","ComputeGravity");
+            kComputeVel         = computeGPU.CreateKernel("resources/kernels/kComputeVel.cl","ComputeVel");
+            kComputePos         = computeGPU.CreateKernel("resources/kernels/kComputePos.cl","ComputePos");
+            kComputeCollision   = computeGPU.CreateKernel("resources/kernels/kComputeCollision.cl","ComputeCollision");
         }
 
         public void Init(List<Particule> entities,List<Cloth> Clothes){

@@ -37,7 +37,11 @@ void main()
             int x = int( d * cos(a) );
             int y = int(-d * sin(a) );
 
-            sum += texture(texture0, fragTexCoord + vec2(x, y)*sizeFactor);
+            //if((x < resolution.x)&&(x>=0)&&(y >= 0)&&(y < resolution.y)){
+                sum += texture(texture0, fragTexCoord + vec2(x, y)*sizeFactor);
+
+            //}
+
 
         }
     }

@@ -168,6 +168,12 @@ namespace Renderer
         public void UpdateCamera(){
             Raylib.UpdateCamera(ref camera); 
 
+            Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
+            float speed =  (CamObj-CamTarget).Length()/4;
+            if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=0.5)){
+                CamTarget += dir*speed;
+            }
+
             camera.target = CamTarget;
             cam_pos[0] = camera.position.X;
             cam_pos[1] = camera.position.Y;
@@ -196,12 +202,7 @@ namespace Renderer
             }
 
             CamObj = us.output_enties[current_view].position;
-            Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
-            float speed =  (CamObj-CamTarget).Length()/4;
 
-            if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=1)){
-                CamTarget += dir*speed;
-            }
         }
 
         public void UpdateLight(UniverSimulation us){

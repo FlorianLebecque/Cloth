@@ -48,8 +48,8 @@ namespace Univers {
             colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            Cloth drape2 = new Cloth(new Vector3(400,0,0),30,30,4f,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-            Cloth drape = new Cloth(new Vector3(0,-200,2),30,30,4f,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Cloth drape2 = new Cloth(new Vector3(400,0,0),30,30,4f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Cloth drape = new Cloth(new Vector3(0,-200,2),30,30,4f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
 
             Cloth.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
@@ -92,29 +92,70 @@ namespace Univers {
 
             RingGenerator.rnd = rnd;
 
-            univers = new UniversSettings(100f,0.01f);
+            univers = new UniversSettings(10f,0.01f);
             entities    = new();
             colors      = new();
             clothList   = new();
 
             Particule earth = new Particule(
-                new Vector3(0,-200,0),Vector3.Zero,
-                100000f,100,0,1
+                new Vector3(0,-1200,0),Vector3.Zero,
+                15000000f,1000,0,100
             );
 
             Particule mountain = new Particule(
                 new Vector3(0,200,0),Vector3.Zero,
-                0,50,0,1
+                0,50,0,5
             );
 
-            entities.Add(mountain);
+            Particule block1 = new Particule(
+                new Vector3(-20,-200,-20),Vector3.Zero,
+                0,1,0,0
+            );
 
+            Particule block2 = new Particule(
+                new Vector3(-20,-200,20),Vector3.Zero,
+                0,1,0,0
+            );
+
+            Particule block3 = new Particule(
+                new Vector3(20,-200,-20),Vector3.Zero,
+                0,1,0,0
+            );
+
+            Particule block4 = new Particule(
+                new Vector3(20,-200,20),Vector3.Zero,
+                0,1,0,0
+            );
+
+
+            entities.Add(mountain);
             entities.Add(earth);
+
+            entities.Add(block1);
+            entities.Add(block2);
+            entities.Add(block3);
+            entities.Add(block4);
+
             colors.Add(new Color(255,255,255,255));
-            colors.Add(new Color(255,255,255,255));
+            colors.Add(new Color(255,255,255,5));
+            colors.Add(new Color(255,255,255,5));
+            colors.Add(new Color(255,255,255,5));
+            colors.Add(new Color(255,255,255,5));
+            colors.Add(new Color(255,255,255,5));
+
+            ClothParameter clp = new();
+            clp.k1 = 800;
+            clp.k2 = 700;
+            clp.k3 = 600;
+            clp.mass = 1f;
+            clp.cd = 4f;
+            clp.roughtness = 0.9f;
+            
+
+            Cloth.parameter = clp;
 
             Cloth c = new Cloth(
-                new Vector3(0,400,0),45,45,4,1,entities,colors,new Color(0,0,120,255)
+                new Vector3(0,400,0),60,60,4,entities,colors,new Color(0,0,120,255)
             );
 
             clothList.Add(c);
@@ -180,6 +221,76 @@ namespace Univers {
             foreach(Ring ring in RingsList){
                 RingGenerator.CreateRing(univers,entities,colors,ring);
             }
+        }
+
+        public static void CreateMiniUniver(Vector3 WORLD_UP){
+            univers = new UniversSettings(8f,0.002f);
+
+
+            Random rnd = new Random(2);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+            List<Ring> RingsList = new();
+
+            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,10,0.8f,0.9f);
+
+            Particule Sun2 = new Particule(new Vector3(0, 0f, 960), new Vector3(0, 0f, -250), 100000,10,0.8f,0.9f);
+
+            Particule Cloth_Planet   = new Particule(new Vector3(0f, 50, 0f), new Vector3(0f, 0, 0), 500,3,0.5f,0.01f);
+            Cloth_Planet.velocity = Particule.GetOrbitalSpeed(Sun,Cloth_Planet,new Vector3(-1,0,0),univers);
+
+            Particule Orbital_planet = new Particule(new Vector3(0, 0,900), new Vector3(0, 0f, 0), 500,3,0.6f,0.01f);
+            Orbital_planet.velocity  = Particule.GetOrbitalSpeed(Sun2,Orbital_planet,WORLD_UP,univers);
+
+            entities.Add(Sun);
+            entities.Add(Sun2);      //secondary sun (far away)
+            entities.Add(Cloth_Planet);   
+            entities.Add(Orbital_planet);
+
+            colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
+            colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
+            colors.Add(new Raylib_cs.Color(0  , 230, 207 ,255));
+            colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
+
+            Cloth drape2 = new Cloth(new Vector3(80,0,0),30,30,1f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Cloth drape = new Cloth(new Vector3(0,-50,0),30,30,1f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+
+
+            Cloth.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
+            Cloth.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1.5f,-1));
+
+            clothList.Add(drape2);
+            clothList.Add(drape);
+
+
+            Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
+            MainRing.radius_factor = 10f;
+            MainRing.min_mass = 0.02f;
+            MainRing.max_mass = 0.04f;
+            Ring SecRing = new Ring(entities,0,new Vector3(0,1,1), 11,12);
+            SecRing.nbr_particul = 2000;
+            SecRing.min_mass = 0.02f;
+            SecRing.max_mass = 0.04f;
+            SecRing.radius_factor = 10f;
+
+            Ring OrbitPlanet = new Ring(entities,1,WORLD_UP, 2,3);
+            OrbitPlanet.nbr_particul = 200;
+            OrbitPlanet.min_mass = 0.02f;
+            OrbitPlanet.max_mass = 0.04f;
+            OrbitPlanet.radius_factor = 5f;
+
+
+            RingsList.Add(MainRing);
+            RingsList.Add(SecRing);
+            RingsList.Add(OrbitPlanet);
+
+            foreach(Ring ring in RingsList){
+                RingGenerator.CreateRing(univers,entities,colors,ring);
+            }
+
+
         }
 
     }

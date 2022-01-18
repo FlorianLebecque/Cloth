@@ -27,19 +27,19 @@ namespace PhysicObject.classes {
 
         public Raylib_cs.Color color;
 
-        public Cloth(Vector3 position,int n,int m,float rest_distance_,float roughness_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
+        public static ClothParameter parameter = new();
+
+        public Cloth(Vector3 position,int n,int m,float rest_distance_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
+
+            
 
             color = c_;
 
             Random rnd = new Random();
 
             
-
             rest_distance = rest_distance_;
-            max_distance = 7f*rest_distance;
-
-            roughtness = roughness_;
-
+            max_distance = parameter.max_distance_factor * rest_distance;
 
             int offset = entites.Count();
 
@@ -52,11 +52,11 @@ namespace PhysicObject.classes {
 
 
 
-            float k1 = 100;
-            float k2 = 150;
-            float k3 = 200;
+            float k1 = parameter.k1;
+            float k2 = parameter.k2;
+            float k3 = parameter.k3;
 
-            float cd = 2f;
+            float cd = parameter.cd;
 
             for(int i = 0; i < n; i++){
                 for(int j = 0; j < m ;j++){
@@ -64,10 +64,10 @@ namespace PhysicObject.classes {
                     Particule pt = new Particule(
                         new Vector3(start_pos_x+i*rest_distance,position.Y,start_pos_z+j*rest_distance),
                         new Vector3(0),
-                        0.2f,
-                        rest_distance/4f,
-                        0.01f,
-                        roughtness
+                        parameter.mass,
+                        rest_distance/parameter.size_factor,
+                        parameter.bounciness,
+                        parameter.roughtness
                     );
                     entites.Add(pt);
 
@@ -197,6 +197,32 @@ namespace PhysicObject.classes {
                 a.velocity = Particule.GetOrbitalSpeed(entities[i],entities[target],normal,univers);
                 entities[i] = a;
             }
+
+        }
+
+    }
+
+    public struct ClothParameter{
+        public float k1;
+        public float k2;
+        public float k3;
+        public float cd;
+        public float mass;
+        public float bounciness;
+        public float roughtness;
+        public float size_factor;
+        public float max_distance_factor;
+
+        public ClothParameter(){
+            k1 = 100;
+            k2 = 150;
+            k3 = 200;
+            cd = 2f;
+            max_distance_factor = 7;
+            size_factor = 4;
+            mass = 0.2f;
+            bounciness = 0;
+            roughtness = 1;
 
         }
 

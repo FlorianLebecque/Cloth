@@ -15,7 +15,6 @@ using static Raylib_cs.MaterialMapIndex;
 namespace PhysicObject.classes {
     public class Cloth {
 
-        
         public Spring[] springs;
 
         public Spring_force[] spring_forces;     //create an array for each springs
@@ -190,7 +189,7 @@ namespace PhysicObject.classes {
             return offset + i + (j*l);
         }
 
-        public static void SetOrbitalSpeed(Cloth t,List<Particule> entities,int target,Univers univers,Vector3 normal){
+        public static void SetOrbitalSpeed(Cloth t,List<Particule> entities,int target,UniversSettings univers,Vector3 normal){
             
 
             for(int i = t.settings.offset; i < t.settings.offset + t.settings.count ; i++){

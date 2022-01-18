@@ -25,7 +25,7 @@ namespace PhysicObject.classes
 
         public float roughness {get;set;}
 
-        public static Vector3 GetOrbitalSpeed(Particule p1,Particule p2, Vector3 normal,Univers univers){
+        public static Vector3 GetOrbitalSpeed(Particule p1,Particule p2, Vector3 normal,UniversSettings univers){
                 float dist = Vector3.Distance(p2.position,p1.position);
                 float total_mass = p1.mass + p2.mass;
                 float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);

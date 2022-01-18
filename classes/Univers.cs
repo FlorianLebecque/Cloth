@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace PhysicObject.classes
 {
-    public struct Univers {
+    public struct UniversSettings {
         public float G {get;set;}
         public float dt {get;set;}
 
-        public Univers(float G_,float dt_){
+        public UniversSettings(float G_,float dt_){
             G = G_;
             dt = dt_;
         }

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Raylib_cs;
 
 
-namespace Univer {
-    public class UniverCreator {
+namespace Univers {
+    public class UniversCreator {
         
-        public static Univers univers;
+        public static UniversSettings univers;
         public static List<Particule> entities = new();
         public static List<Raylib_cs.Color> colors = new();
         public static List<Cloth> clothList = new();
@@ -21,7 +21,7 @@ namespace Univer {
 
             RingGenerator.rnd = rnd;
 
-            univers = new Univers(20f,0.01f);
+            univers = new UniversSettings(20f,0.01f);
             entities    = new();
             colors      = new();
             clothList   = new();

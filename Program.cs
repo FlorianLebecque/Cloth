@@ -7,7 +7,7 @@ using static Raylib_cs.CameraProjection;
 
 
 using Simulator;
-using Univer;
+using Univers;
 using Renderer;
 
 namespace ClothSimulator;
@@ -41,13 +41,13 @@ class Program{
         SetTargetFPS(120);
 
 
-        UniverCreator.CreateUnivers1(WORLD_UP);
+        UniversCreator.CreateUnivers1(WORLD_UP);
 
-        RaylibRenderer RR = new RaylibRenderer(camera,UniverCreator.colors);
+        RaylibRenderer RR = new RaylibRenderer(camera,UniversCreator.colors);
 
-        UniverSimulation us = new UniverSimulation(UniverCreator.univers);
+        UniverSimulation us = new UniverSimulation(UniversCreator.univers);
 
-        us.Init(UniverCreator.entities,UniverCreator.clothList);
+        us.Init(UniversCreator.entities,UniversCreator.clothList);
 
 
         /*

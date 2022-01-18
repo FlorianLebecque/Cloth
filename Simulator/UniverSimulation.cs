@@ -18,7 +18,7 @@ using static Raylib_cs.Raylib;
 namespace Simulator {
     public class UniverSimulation {
         
-        public Univers univers;
+        public PhysicObject.classes.UniversSettings univers;
 
         public Particule[] output_enties ;
 
@@ -40,7 +40,7 @@ namespace Simulator {
         CLKernel kComputeCollision ;
 
         bool started = false;
-        public UniverSimulation(Univers u){
+        public UniverSimulation(PhysicObject.classes.UniversSettings u){
             univers = u;
 
 
@@ -73,7 +73,7 @@ namespace Simulator {
             bOctree_regions    = computeGPU.CreateBuffer<Region>(MemoryFlags.ReadOnly,UniversTree.RegionsArray);
             bOctree_settings   = computeGPU.CreateBuffer<OctreeSettings>(MemoryFlags.ReadOnly,new OctreeSettings[]{UniversTree.settings});
 
-            bUniver = computeGPU.CreateBuffer<Univers>(MemoryFlags.ReadWrite,new Univers[1]{univers});
+            bUniver = computeGPU.CreateBuffer<PhysicObject.classes.UniversSettings>(MemoryFlags.ReadWrite,new PhysicObject.classes.UniversSettings[1]{ univers });
 
             clothes_sim = new ClothSimulation[Clothes.Count()];
             for(int i = 0; i < Clothes.Count(); i++){
@@ -83,7 +83,7 @@ namespace Simulator {
             BindKernel();
 
             computeGPU.Upload<Particule>(B1,output_enties);
-            computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
+            computeGPU.Upload<PhysicObject.classes.UniversSettings>(bUniver, new PhysicObject.classes.UniversSettings[1]{ univers });
             computeGPU.Upload<OctreeSettings>(bOctree_settings,new OctreeSettings[]{UniversTree.settings});
             computeGPU.Upload<Region>(bOctree_regions,UniversTree.RegionsArray);
             computeGPU.Upload<int>(bOctree_data,UniversTree.ParticulesArray);
@@ -146,7 +146,7 @@ namespace Simulator {
                 }else{
                     univers.dt += 0.0001f;
                 }
-                computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
+                computeGPU.Upload<PhysicObject.classes.UniversSettings>(bUniver, new PhysicObject.classes.UniversSettings[1]{ univers });
             }
 
             if(IsKeyDown(KEY_KP_SUBTRACT)){
@@ -158,7 +158,7 @@ namespace Simulator {
                 if(univers.dt <= 0){
                     univers.dt = 0;
                 }
-                computeGPU.Upload<Univers>(bUniver,new Univers[1]{univers});
+                computeGPU.Upload<PhysicObject.classes.UniversSettings>(bUniver, new PhysicObject.classes.UniversSettings[1]{ univers });
             }
 
             if(IsKeyPressed(KEY_SPACE)){

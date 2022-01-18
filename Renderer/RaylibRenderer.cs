@@ -22,27 +22,18 @@ namespace Renderer
 
         Shader lightShader;
         Model sphereModel;
-
         Model skyboxModel;
-
         Shader BloomShader;
-
         int loc_vector_view;
-
         ParticuleDrawer PD;
-
         Color[] colors;
-
         Light[] ltable;
         Camera3D camera;
         RenderTexture2D render_target;
         Rectangle screenRec;
         int current_view;
-
         bool debug_render = false;
-
         Cube current_cube;
-
         Vector3 CamTarget;
         Vector3 CamObj;
 

@@ -45,5 +45,5 @@ void main()
     float nbr = (TWO_PI/ANGLE_INC) * (Distance/DIST_INC);
 
     // Calculate final fragment color
-    finalColor = ((sum/(2*nbr)) + source)*colDiffuse;
+    finalColor = ((sum/(nbr)) + source)*colDiffuse;
 }

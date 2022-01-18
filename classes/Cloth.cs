@@ -12,8 +12,8 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
-namespace Cloth.classes {
-    public class Tissue {
+namespace PhysicObject.classes {
+    public class Cloth {
 
         
         public Spring[] springs;
@@ -28,7 +28,7 @@ namespace Cloth.classes {
 
         public Raylib_cs.Color color;
 
-        public Tissue(Vector3 position,int n,int m,float rest_distance_,float roughness_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
+        public Cloth(Vector3 position,int n,int m,float rest_distance_,float roughness_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
 
             color = c_;
 
@@ -190,7 +190,7 @@ namespace Cloth.classes {
             return offset + i + (j*l);
         }
 
-        public static void SetOrbitalSpeed(Tissue t,List<Particule> entities,int target,Univers univers,Vector3 normal){
+        public static void SetOrbitalSpeed(Cloth t,List<Particule> entities,int target,Univers univers,Vector3 normal){
             
 
             for(int i = t.settings.offset; i < t.settings.offset + t.settings.count ; i++){

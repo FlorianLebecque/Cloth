@@ -7,7 +7,7 @@ using static Raylib_cs.Raymath;
 using static Raylib_cs.Color;
 using Raylib_cs;
 
-namespace Cloth.classes {
+namespace PhysicObject.classes {
     public class Ring {
         
         public int target;
@@ -55,58 +55,6 @@ namespace Cloth.classes {
 
             bounciness = 0.5f;
             roughness = 0.1f;
-        }
-
-    }
-
-    public class RingGenerator{
-
-        public static Vector3 WORLD_UP = new Vector3(0,1,0);
-        public static Random rnd = new Random(2);
-        public static void CreateRing(Univers univers,List<Particule> entities,List<Color> colors,Ring ring){
-
-            if(rnd == null){
-                rnd = new Random(2);
-            }
-
-            Vector3 rotationAxis = Vector3.Normalize(Vector3.Cross(WORLD_UP,ring.normal));
-
-            if(WORLD_UP == ring.normal){
-                rotationAxis = WORLD_UP;
-            }
-
-            float angle = -(float)Math.Acos(Vector3.Dot(WORLD_UP,ring.normal));
-            Matrix4x4 r = MatrixRotate(rotationAxis,angle);
-
-                //generation of a ring of particule arround the first sun
-            for(int i = 0; i < ring.nbr_particul; i++){
-
-                float xz_dist = rnd.Next((int)ring.min_distance,(int)ring.max_distance);
-                float theta = rnd.Next();
-
-                float x =  xz_dist * (float)Math.Cos(theta);
-                float z = -xz_dist * (float)Math.Sin(theta);
-                float y = rnd.Next(-(int)entities[ring.target].radius/2,(int)entities[ring.target].radius/2);
-
-                Vector3 pos =  new Vector3(x,y,z);
-        
-                pos = entities[ring.target].position + Vector3.Transform(pos,r);
-
-
-                float mass = ring.min_mass +  (float)rnd.NextDouble() * ring.max_mass;
-                Particule p = new Particule(
-                    pos,
-                    Vector3.One,
-                    mass,
-                    mass*ring.radius_factor,
-                    ring.bounciness,
-                    ring.roughness
-                );
-                p.velocity = Particule.GetOrbitalSpeed(entities[ring.target],p,ring.normal,univers);
-
-                entities.Add(p);
-                colors.Add(new Raylib_cs.Color(GetRandomValue(200,255),GetRandomValue(200,255),GetRandomValue(200,255),255));
-            }
         }
 
     }

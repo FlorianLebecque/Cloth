@@ -15,7 +15,7 @@ using static Raylib_cs.MaterialMapIndex;
 
 
 
-namespace Cloth.classes.tree {
+namespace PhysicObject.classes.tree {
     public class Octree {
         
         private int[] particules_index;

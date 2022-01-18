@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cloth.classes {
+namespace PhysicObject.classes {
 
     public struct Spring{
         public float rest_distance {get;set;}

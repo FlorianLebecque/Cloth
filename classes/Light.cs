@@ -13,7 +13,7 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
-namespace Cloth.classes {
+namespace PhysicObject.classes {
     public struct Light {
         
         public int enabled;

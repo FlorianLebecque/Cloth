@@ -14,7 +14,7 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
-namespace Cloth.classes.tree {
+namespace PhysicObject.classes.tree {
     public struct Cube {
 
         public Vector3 center;

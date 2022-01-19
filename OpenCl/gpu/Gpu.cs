@@ -184,10 +184,21 @@ namespace OPENCL {
                 CL.EnqueueReadBuffer(commandQueue, buffer, true, UIntPtr.Zero, (UIntPtr) (ulong) (output.Length * Marshal.SizeOf<T>()), (IntPtr) (void*) pointer, 0U, null, out _);
             
         }
-        
-        public void End(){
 
+        public void Flush(){
+            CL.Flush(commandQueue);
+        }
+        public void Clear(){
+            CL.ReleaseCommandQueue(commandQueue);
+            CL.ReleaseContext(Gpu_context);
+            CL.ReleaseDevice(Gpu_1);
         }
 
+        public void ClearBuffer(CLBuffer b){
+            CL.EnqueueUnmapMemoryObject(commandQueue,b,IntPtr.Zero,0,null,out event0);
+            CL.ReleaseMemoryObject(b);
+            
+        }
+        
     }
 }

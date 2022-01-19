@@ -31,7 +31,7 @@ namespace Renderer
         Camera3D camera;
         RenderTexture2D render_target;
         Rectangle screenRec;
-        int current_view;
+        public int current_view;
         bool debug_render = false;
         Cube current_cube;
         Vector3 CamTarget;
@@ -47,6 +47,7 @@ namespace Renderer
             render_target = LoadRenderTexture(GetScreenWidth(),GetScreenHeight());
 
             ltable = new Light[4];
+            Light.lightsCount = 0;
 
             sphereModel = ModelInit();
             skyboxModel = SkyBoxInit();
@@ -67,9 +68,8 @@ namespace Renderer
             Model initialisation
             */
             
-            Mesh sphere = GenMeshSphere(1f,20,20);
-            Model model = LoadModelFromMesh(sphere);//LoadModel("resources/models/bunny.obj");
-
+            //Mesh sphere = GenMeshSphere(1f,20,20);
+            Model model = LoadModel("resources/models/sphere.obj");
             lightShader = LoadShader("resources/shaders/base_lighting.vs","resources/shaders/lighting.fs");
             loc_vector_view = GetShaderLocation(lightShader,"viewPos");
 
@@ -107,7 +107,7 @@ namespace Renderer
             return BloomShader;
         }
         
-        public void Draw(UniverSimulation us){
+        private void Draw(UniverSimulation us){
             BeginTextureMode(render_target);
                 BeginMode3D(camera);
                     ClearBackground(BLACK);
@@ -165,7 +165,7 @@ namespace Renderer
             EndDrawing();
         }
 
-        public void UpdateCamera(){
+        private void UpdateCamera(){
             Raylib.UpdateCamera(ref camera); 
 
             Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
@@ -181,7 +181,7 @@ namespace Renderer
             RaylibUtils.Utils.SetShaderValue<float[]>(lightShader,loc_vector_view,cam_pos,ShaderUniformDataType.SHADER_UNIFORM_VEC3 );
         }
 
-        public void CheckControl(UniverSimulation us){
+        private void CheckControl(UniverSimulation us){
             if(IsKeyPressed(KEY_LEFT)){
                 debug_render = !debug_render;
             }
@@ -205,11 +205,19 @@ namespace Renderer
 
         }
 
-        public void UpdateLight(UniverSimulation us){
+        private void UpdateLight(UniverSimulation us){
             ltable[0].position = us.output_enties[0].position;
             ltable[1].position = us.output_enties[1].position;
             Light.UpdateLightValues(lightShader,ltable[0]);
             Light.UpdateLightValues(lightShader,ltable[1]);
+        }
+
+        public void Run(UniverSimulation us){
+            UpdateCamera();
+
+            CheckControl(us);
+            UpdateLight(us);
+            Draw(us);
         }
 
     }

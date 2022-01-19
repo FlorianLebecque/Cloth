@@ -24,7 +24,9 @@ namespace Renderer
 
         RaylibRenderer renderer;
         UniverSimulation univer_simulation;
-        public Menu(){
+
+        Camera3D camera;
+        public Menu(Camera3D camera_){
 
             selected = 0;
 
@@ -35,12 +37,9 @@ namespace Renderer
             x = GetScreenWidth() / 16;
             y = GetScreenHeight() / 2 - ((height+10));
 
-            Camera3D camera = new Camera3D();
-            camera.position = new Vector3(2.5f, 400f, 3.0f);    // Camera position
-            camera.target = new Vector3(0.0f, 0.0f, 0.7f);      // Camera looking at point
-            camera.up = new Vector3(0,1,0);    
-            camera.fovy = 90.0f;                                // Camera field-of-view Y
-            camera.projection = CameraProjection.CAMERA_PERSPECTIVE;
+            camera = camera_;
+            SetCameraMode(camera,CameraMode.CAMERA_ORBITAL);
+            
 
             UniversCreator.CreateMenuUniver(new Vector3(0,1,0));
             renderer = new RaylibRenderer(camera,UniversCreator.colors);
@@ -54,6 +53,8 @@ namespace Renderer
 
         public void reRun(){
             valide = false;
+            SetCameraMode(camera,CameraMode.CAMERA_ORBITAL);
+
         }
         private void Draw(){
 

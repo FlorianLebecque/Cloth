@@ -98,32 +98,32 @@ namespace Univers {
             clothList   = new();
 
             Particule earth = new Particule(
-                new Vector3(0,-1200,0),Vector3.Zero,
+                new Vector3(0,-1400,0),Vector3.Zero,
                 15000000f,1000,0,100
             );
 
             Particule mountain = new Particule(
-                new Vector3(0,200,0),Vector3.Zero,
+                new Vector3(0,0,0),Vector3.Zero,
                 0,50,0,5
             );
 
             Particule block1 = new Particule(
-                new Vector3(-20,-200,-20),Vector3.Zero,
+                new Vector3(-20,-400,-20),Vector3.Zero,
                 0,1,0,0
             );
 
             Particule block2 = new Particule(
-                new Vector3(-20,-200,20),Vector3.Zero,
+                new Vector3(-20,-400,20),Vector3.Zero,
                 0,1,0,0
             );
 
             Particule block3 = new Particule(
-                new Vector3(20,-200,-20),Vector3.Zero,
+                new Vector3(20,-400,-20),Vector3.Zero,
                 0,1,0,0
             );
 
             Particule block4 = new Particule(
-                new Vector3(20,-200,20),Vector3.Zero,
+                new Vector3(20,-400,20),Vector3.Zero,
                 0,1,0,0
             );
 
@@ -155,7 +155,7 @@ namespace Univers {
             Cloth.parameter = clp;
 
             Cloth c = new Cloth(
-                new Vector3(0,400,0),60,60,4,entities,colors,new Color(0,0,120,255)
+                new Vector3(0,200,0),60,60,4,entities,colors,new Color(0,0,120,255)
             );
 
             clothList.Add(c);

@@ -30,8 +30,8 @@ class Program{
         InitWindow(ScreenWidth, ScreenHeight, "Gravity");
 
         Camera3D camera = new Camera3D();
-        camera.position = new Vector3(2.5f, 400f, 3.0f);    // Camera position
-        camera.target = new Vector3(0.0f, 0.0f, 0.7f);      // Camera looking at point
+        camera.position = new Vector3(250f, 50f, 0f);    // Camera position
+        camera.target = new Vector3(0.0f, 0.0f, 0.0f);      // Camera looking at point
         camera.up = WORLD_UP;    
         camera.fovy = 90.0f;                                // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;
@@ -44,7 +44,7 @@ class Program{
         RaylibRenderer renderer = new RaylibRenderer(camera,UniversCreator.colors);
         UniverSimulation univer_simulation = new UniverSimulation(UniversCreator.univers,UniversCreator.entities,UniversCreator.clothList);
 
-        Menu menu = new Menu();
+        Menu menu = new Menu(camera);
         menu.Add("2 Rings with cloth and planet collision");
         menu.Add("Cloth on a sphere");
         //menu.Add("2 Rings and a lot of particule");
@@ -96,6 +96,8 @@ class Program{
                 UniversCreator.CreateMiniUniver(WORLD_UP);
                 break;
         }
+
+        SetCameraMode(camera,CameraMode.CAMERA_THIRD_PERSON);
 
         renderer = new RaylibRenderer(camera,UniversCreator.colors);
         univer_simulation = new UniverSimulation(UniversCreator.univers,UniversCreator.entities,UniversCreator.clothList);

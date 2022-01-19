@@ -22,7 +22,7 @@ namespace PhysicObject.classes {
         Vector3 target;
         public Raylib_cs.Color color;
 
-        static int lightsCount = 0;
+        public static int lightsCount = 0;
         int enabledLoc;
         int typeLoc;
         int posLoc;

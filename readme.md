@@ -1,7 +1,6 @@
 # Gravity and cloth simulation
 
-35 fps | Cloth of 45/45 and 1504 independant particules
-I7-10700K, 1080ti, 32GB ram
+[Demonstration](https://youtu.be/OgrpkbtYH7w)
 
 ## Force simulated :
 - Gravity

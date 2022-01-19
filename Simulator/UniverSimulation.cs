@@ -24,7 +24,7 @@ namespace Simulator {
 
         ClothSimulation[] clothes_sim;
         public Octree UniversTree;
-        GPU computeGPU;
+        static GPU computeGPU;
 
         CLBuffer bUniver;
         CLBuffer B1;
@@ -34,30 +34,42 @@ namespace Simulator {
         CLBuffer bOctree_regions;
         CLBuffer bOctree_settings;
 
-        CLKernel kComputeGravity;
-        CLKernel kComputeVel;
-        CLKernel kComputePos;
-        CLKernel kComputeCollision ;
+        static CLKernel kComputeGravity;
+        static CLKernel kComputeVel;
+        static CLKernel kComputePos;
+        static CLKernel kComputeCollision ;
 
+        OctreeSettings[] OCS;
         bool started = false;
-        public UniverSimulation(PhysicObject.classes.UniversSettings u){
+        public UniverSimulation(PhysicObject.classes.UniversSettings u, List<Particule> entities,List<Cloth> Clothes){
             univers = u;
 
+            OCS = new OctreeSettings[1];
 
             output_enties = new Particule[1];
             clothes_sim = new ClothSimulation[1];
 
             UniversTree = new Octree(10,10);
 
-            computeGPU = new();
+            if(computeGPU == null)
+                computeGPU = new();
 
-            kComputeGravity     = computeGPU.CreateKernel("resources/kernels/kComputeGravity.cl","ComputeGravity");
-            kComputeVel         = computeGPU.CreateKernel("resources/kernels/kComputeVel.cl","ComputeVel");
-            kComputePos         = computeGPU.CreateKernel("resources/kernels/kComputePos.cl","ComputePos");
-            kComputeCollision   = computeGPU.CreateKernel("resources/kernels/kComputeCollision.cl","ComputeCollision");
+            if(kComputeGravity.Handle == IntPtr.Zero)
+                kComputeGravity = computeGPU.CreateKernel("resources/kernels/kComputeGravity.cl","ComputeGravity");
+
+            if(kComputeVel.Handle == IntPtr.Zero)
+                kComputeVel = computeGPU.CreateKernel("resources/kernels/kComputeVel.cl","ComputeVel");
+
+            if(kComputePos.Handle == IntPtr.Zero)
+                kComputePos = computeGPU.CreateKernel("resources/kernels/kComputePos.cl","ComputePos");
+
+            if(kComputeCollision.Handle == IntPtr.Zero)
+                kComputeCollision = computeGPU.CreateKernel("resources/kernels/kComputeCollision.cl","ComputeCollision");
+
+            Init(entities,Clothes);
         }
 
-        public void Init(List<Particule> entities,List<Cloth> Clothes){
+        private void Init(List<Particule> entities,List<Cloth> Clothes){
 
             output_enties = entities.ToArray();
 
@@ -118,7 +130,9 @@ namespace Simulator {
             UniversTree.inserts(output_enties);
             UniversTree.GenParticulesArray();
 
-            computeGPU.Upload<OctreeSettings>(bOctree_settings,new OctreeSettings[]{UniversTree.settings});
+            OCS[0] = UniversTree.settings;
+
+            computeGPU.Upload<OctreeSettings>(bOctree_settings,OCS);
             computeGPU.Upload<Region>(bOctree_regions,UniversTree.RegionsArray);
             computeGPU.Upload<int>(bOctree_data,UniversTree.ParticulesArray);
 
@@ -169,6 +183,29 @@ namespace Simulator {
         public void Run(){
             CheckControl();
             Simulate();
+        }
+
+        public void Clear(){
+            
+            computeGPU.Flush();
+
+            computeGPU.ClearBuffer(bUniver);
+            computeGPU.ClearBuffer(B1);
+            computeGPU.ClearBuffer(B2);
+            computeGPU.ClearBuffer(bOctree_data);
+            computeGPU.ClearBuffer(bOctree_regions);
+            computeGPU.ClearBuffer(bOctree_settings);
+
+            foreach(ClothSimulation c in clothes_sim){
+                c.Clear();
+            }
+            
+            //CL.ReleaseKernel(kComputeGravity);
+            //CL.ReleaseKernel(kComputeVel);
+            //CL.ReleaseKernel(kComputePos);
+            //CL.ReleaseKernel(kComputeCollision);
+            
+            //computeGPU.Clear();
         }
 
     }

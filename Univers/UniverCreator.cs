@@ -293,5 +293,63 @@ namespace Univers {
 
         }
 
+        public static void CreateMenuUniver(Vector3 WORLD_UP){
+            Random rnd = new Random(2);
+            colors.Add(new Color(255,255,255,255));
+            
+
+            RingGenerator.rnd = rnd;
+
+            univers = new UniversSettings(20f,0.01f);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+            List<Ring> RingsList = new();
+
+            Particule Univer1 = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.5f);
+            colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
+
+            Particule mountain = new Particule(
+                new Vector3(2000,200,2000),Vector3.Zero,
+                0,50,0,5
+            );
+            colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
+
+
+            entities.Add(Univer1);
+            entities.Add(mountain);
+
+            Cloth drape2 = new Cloth(new Vector3(400,0,0),30,30,4f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
+            Cloth drape = new Cloth(new Vector3(0,-200,2),30,30,4f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+
+            clothList.Add(drape);
+            clothList.Add(drape2);
+
+            Cloth c = new Cloth(
+                new Vector3(2000,400,2000),60,60,4,entities,colors,new Color(0,0,120,255)
+            );
+
+            clothList.Add(c);
+
+            Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
+            MainRing.radius_factor = 10f;
+            MainRing.min_mass = 0.1f;
+            MainRing.max_mass = 0.2f;
+            Ring SecRing = new Ring(entities,0,new Vector3(0,1,1), 11,12);
+            SecRing.nbr_particul = 2000;
+            SecRing.min_mass = 0.1f;
+            SecRing.max_mass = 0.2f;
+            SecRing.radius_factor = 10f;
+
+            RingsList.Add(MainRing);
+            RingsList.Add(SecRing);
+
+            foreach(Ring ring in RingsList){
+                RingGenerator.CreateRing(univers,entities,colors,ring);
+            }
+
+        }
+
     }
 }

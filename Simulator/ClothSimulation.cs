@@ -50,12 +50,24 @@ namespace Simulator {
         }
 
         public void Simulate(){
+
             computeGPU.Execute(kComputeSpringForce,1,springCount);
             computeGPU.Execute(kComputeSpring,1,particuleCount);
         }
 
         public void Update(){
             computeGPU.Download<Spring>(bSprings,cloth.springs);
+        }
+
+        public void Clear(){
+            computeGPU.ClearBuffer(bSprings);
+            computeGPU.ClearBuffer(bSpringsForce);
+            computeGPU.ClearBuffer(bClothSettings);
+
+
+            //CL.ReleaseKernel(kComputeSpringForce);
+            //CL.ReleaseKernel(kComputeSpring);
+
         }
 
     }

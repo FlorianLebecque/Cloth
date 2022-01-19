@@ -16,7 +16,6 @@ class Program{
 
     static void Main(string[] args){
 
-
         const int ScreenWidth = 1920;
         const int ScreenHeight = 1080;
         Vector3 WORLD_UP = new Vector3(0,1,0);
@@ -40,30 +39,66 @@ class Program{
         SetCameraMode(camera, CameraMode.CAMERA_THIRD_PERSON);
         SetTargetFPS(120);
 
-
-        UniversCreator.CreateUnivers2(WORLD_UP);
-
+        //useless initialisation -> go check Load function
+        UniversCreator.CreateUnivers3(WORLD_UP);
         RaylibRenderer renderer = new RaylibRenderer(camera,UniversCreator.colors);
+        UniverSimulation univer_simulation = new UniverSimulation(UniversCreator.univers,UniversCreator.entities,UniversCreator.clothList);
 
-        UniverSimulation univer_simulation = new UniverSimulation(UniversCreator.univers);
-
-        univer_simulation.Init(UniversCreator.entities,UniversCreator.clothList);
-
+        Menu menu = new Menu();
+        menu.Add("2 Rings with cloth and planet collision");
+        menu.Add("Cloth on a sphere");
+        //menu.Add("2 Rings and a lot of particule");
+        //menu.Add("the first one but in very small");
 
         /*
             Main loop
         */   
+        int selected = -1;
+        bool loaded = false;
         while (!WindowShouldClose()) {
-            renderer.UpdateCamera();
 
-            univer_simulation.Run();
+            selected = menu.Run();
             
-            renderer.CheckControl(univer_simulation);
-            renderer.UpdateLight(univer_simulation);
+            if(selected != -1){
 
-            renderer.Draw(univer_simulation);
+                if(loaded == false){
+                    loaded = true;
+                    Load(selected,WORLD_UP,camera,ref renderer,ref univer_simulation);
+                }     
+
+                if(IsKeyPressed(KeyboardKey.KEY_BACKSPACE)){
+                    menu.reRun();
+                    loaded = false;
+                    selected = -1;
+                    //univer_simulation.Clear();
+                }           
+
+                univer_simulation.Run();
+                renderer.Run(univer_simulation);
+            }
         }
 
+    }
+
+    public static void Load(int selected,Vector3 WORLD_UP,Camera3D camera, ref RaylibRenderer renderer,ref UniverSimulation univer_simulation){
+        
+        switch(selected){
+            case 0:
+                UniversCreator.CreateUnivers1(WORLD_UP);
+                break;
+            case 1:
+                UniversCreator.CreateUnivers2(WORLD_UP);
+                break;
+            case 2:
+                UniversCreator.CreateUnivers3(WORLD_UP);
+                break;
+            case 3:
+                UniversCreator.CreateMiniUniver(WORLD_UP);
+                break;
+        }
+
+        renderer = new RaylibRenderer(camera,UniversCreator.colors);
+        univer_simulation = new UniverSimulation(UniversCreator.univers,UniversCreator.entities,UniversCreator.clothList);
     }
 
 }

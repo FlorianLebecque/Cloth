@@ -12,26 +12,33 @@ using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
 
-namespace Cloth.classes {
-    public class Tissue {
+namespace PhysicObject.classes {
+    public class Cloth {
 
-        
         public Spring[] springs;
 
+        public Spring_force[] spring_forces;     //create an array for each springs
+         
         public Cloth_settings settings;
 
         private float rest_distance;
         private float max_distance;
-        private float roughtness;
 
+        public Raylib_cs.Color color;
 
-        public Tissue(Vector3 position,int n,int m,List<Particule> entites,List<Raylib_cs.Color> colors){
+        public static ClothParameter parameter = new();
 
-            rest_distance = 3f;
-            max_distance = 7f*rest_distance;
+        public Cloth(Vector3 position,int n,int m,float rest_distance_,List<Particule> entites,List<Raylib_cs.Color> colors,Raylib_cs.Color c_){
 
-            roughtness = 1f;
+            
 
+            color = c_;
+
+            Random rnd = new Random();
+
+            
+            rest_distance = rest_distance_;
+            max_distance = parameter.max_distance_factor * rest_distance;
 
             int offset = entites.Count();
 
@@ -44,11 +51,11 @@ namespace Cloth.classes {
 
 
 
-            float k1 = 90;
-            float k2 = 75;
-            float k3 = 50;
+            float k1 = parameter.k1;
+            float k2 = parameter.k2;
+            float k3 = parameter.k3;
 
-            float cd = 2f;
+            float cd = parameter.cd;
 
             for(int i = 0; i < n; i++){
                 for(int j = 0; j < m ;j++){
@@ -56,15 +63,27 @@ namespace Cloth.classes {
                     Particule pt = new Particule(
                         new Vector3(start_pos_x+i*rest_distance,position.Y,start_pos_z+j*rest_distance),
                         new Vector3(0),
-                        0.2f,
-                        rest_distance/4f,
-                        0.01f,
-                        roughtness
+                        parameter.mass,
+                        rest_distance/parameter.size_factor,
+                        parameter.bounciness,
+                        parameter.roughtness
                     );
                     entites.Add(pt);
 
-                    colors.Add(new Raylib_cs.Color(50,50,GetRandomValue(100,255),255));
+                    int R = c_.r + rnd.Next(-10,10);
+                    int G = c_.g + rnd.Next(-10,10);
+                    int B = c_.b + rnd.Next(-10,10);
 
+                    if(R >255) R = 255;
+                    if(G >255) G = 255;
+                    if(B >255) B = 255;
+
+                    if(R < 0) R = 0;
+                    if(G < 0) G = 0;
+                    if(B < 0) B = 0;
+
+                    colors.Add(new Raylib_cs.Color(R,G,B,255));
+                    
                     int index = GetIndex(offset,i,j,m);
 
 
@@ -123,34 +142,38 @@ namespace Cloth.classes {
                         spring_list.Add(new Spring(sqrt_2*rest_distance,max_distance,k2,index,dr_index,cd));
                     } 
 
-                    int dl_i = i - 2; //left
-                    int dr_i = i + 2; //right
-                    int du_j = j - 2; //up
-                    int dd_j = j + 2; //down
+                    int dist = 2;
+
+                    int dl_i = i - dist; //left
+                    int dr_i = i + dist; //right
+                    int du_j = j - dist; //up
+                    int dd_j = j + dist; //down
 
                     //left double
                     if ( dl_i >= 0){
                         int left_index = GetIndex(offset,dl_i,j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,left_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,left_index,2f));
                     }
 
                     //right double
                     if ( dr_i < n){
                         int right_index = GetIndex(offset,dr_i,j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,right_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,right_index,2f));
                     }
 
                     //up double
                     if ( du_j >= 0){
                         int up_index = GetIndex(offset,i,du_j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,up_index,2f));   
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,up_index,2f));   
                     }
 
                     //down double
                     if ( dd_j < m){
                         int down_index = GetIndex(offset,i,dd_j,m);
-                        spring_list.Add(new Spring(2*rest_distance,max_distance,k3,index,down_index,2f));
+                        spring_list.Add(new Spring(dist*rest_distance,max_distance,k3,index,down_index,2f));
                     }
+
+                    
 
                 }
             }
@@ -158,10 +181,48 @@ namespace Cloth.classes {
             settings.nbr_spring = spring_list.Count();
 
             springs = spring_list.ToArray();
+            spring_forces = new Spring_force[springs.Count()];
         }
 
         private int GetIndex(int offset,int i,int j,int l){
             return offset + i + (j*l);
+        }
+
+        public static void SetOrbitalSpeed(Cloth t,List<Particule> entities,int target,UniversSettings univers,Vector3 normal){
+            
+
+            for(int i = t.settings.offset; i < t.settings.offset + t.settings.count ; i++){
+                Particule a = entities[i];
+                a.velocity = Particule.GetOrbitalSpeed(entities[i],entities[target],normal,univers);
+                entities[i] = a;
+            }
+
+        }
+
+    }
+
+    public struct ClothParameter{
+        public float k1;
+        public float k2;
+        public float k3;
+        public float cd;
+        public float mass;
+        public float bounciness;
+        public float roughtness;
+        public float size_factor;
+        public float max_distance_factor;
+
+        public ClothParameter(){
+            k1 = 100;
+            k2 = 150;
+            k3 = 200;
+            cd = 2f;
+            max_distance_factor = 7;
+            size_factor = 4;
+            mass = 0.2f;
+            bounciness = 0;
+            roughtness = 1;
+
         }
 
     }

@@ -72,10 +72,10 @@ struct Vector3 V3fdiv(struct Vector3 V1,float v){
 }
 
 
-__kernel void ComputeSpringForce(__global struct Particule_obj *input, __global struct Particule_obj *ouput ,__global struct Spring_force *sp,__global struct Cloth_settings *cloth){
+__kernel void ComputeSpring(__global struct Particule_obj *input ,__global struct Spring_force *sp,__global struct Cloth_settings *cloth){
 	int index = get_global_id(0) + cloth[0].offset;
 
-    ouput[index] = input[index];
+    //ouput[index] = input[index];
 
     struct Vector3 force = V3fmul(input[index].acceleration,input[index].mass);
 
@@ -91,6 +91,6 @@ __kernel void ComputeSpringForce(__global struct Particule_obj *input, __global 
 
     }
 
-    ouput[index].acceleration = V3fdiv(force,input[index].mass);
+    input[index].acceleration = V3fdiv(force,input[index].mass);
 
 }

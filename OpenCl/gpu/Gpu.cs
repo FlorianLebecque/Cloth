@@ -55,9 +55,11 @@ namespace OPENCL {
             return Gpu_context;
         }
 
-        private CLCommandQueue InitCommandQueue(CLContext Gpu_context,CLDevice Gpu_1){
+        private unsafe CLCommandQueue InitCommandQueue(CLContext Gpu_context,CLDevice Gpu_1){
             CLResultCode errorCode;
-            CLCommandQueue commandQueue = CL.CreateCommandQueue(Gpu_context, Gpu_1, (CommandQueueProperty)0, out errorCode);
+            CommandQueueProperty cqp = new CommandQueueProperty();
+            
+            CLCommandQueue commandQueue = CL.CreateCommandQueueWithProperties(Gpu_context,Gpu_1,new IntPtr(&cqp),out errorCode);
             if (errorCode != CLResultCode.Success) {
                 throw new Exception("Impossible de créer la liste de traitement");
             }
@@ -126,11 +128,6 @@ namespace OPENCL {
 
         public unsafe void Upload<T>(CLBuffer buffer,T[] data) where T:unmanaged{
 
-            int sizes = Marshal.SizeOf(typeof(T))*data.Count();
-            UIntPtr size = new UIntPtr((uint)sizes);
-
-            //CL.EnqueueWriteBuffer(commandQueue,buffer,true,UIntPtr.Zero,size,new IntPtr(&data),null,out event0);
-
             CL.EnqueueWriteBuffer<T>(
                 commandQueue,
                 buffer,
@@ -144,15 +141,6 @@ namespace OPENCL {
         }
 
         public unsafe void SetKernelArg(CLKernel kernel,uint index,CLBuffer buffer){
-            
-            //MemoryObjectType.Buffer; //4336
-            //MemoryObjectInfo.Size; //4354
-
-            byte[] result;
-            CL.GetMemObjectInfo(buffer,MemoryObjectInfo.Size,out result);
-            UInt32 size = BitConverter.ToUInt32(result);
-            UInt32 size2 = (UInt32)Marshal.SizeOf(typeof(CLBuffer));
-            UInt32 size3 = (UInt32)Marshal.SizeOf(typeof(IntPtr));
 
             CLResultCode err = CL.SetKernelArg(kernel, index,(UIntPtr)Marshal.SizeOf(typeof(CLBuffer)), new IntPtr(&buffer));
 
@@ -170,19 +158,14 @@ namespace OPENCL {
             UIntPtr[] global = new UIntPtr[dim];
             global[0] = new UIntPtr((uint)count);
 
-            UIntPtr[] local = new UIntPtr[1];
-            int local_work = count;
-
-            local[0] = new UIntPtr((uint)local_work);            
-            
             CLResultCode err;
             err = CL.EnqueueNDRangeKernel(
                 commandQueue,
                 kernel,
                 dim,
                 null,
-                global,
-                null,
+                global, // total number of execution
+                null,   // can be null -> let the gpu decide
                 0,
                 null,
                 out event0
@@ -201,10 +184,21 @@ namespace OPENCL {
                 CL.EnqueueReadBuffer(commandQueue, buffer, true, UIntPtr.Zero, (UIntPtr) (ulong) (output.Length * Marshal.SizeOf<T>()), (IntPtr) (void*) pointer, 0U, null, out _);
             
         }
-        
-        public void End(){
 
+        public void Flush(){
+            CL.Flush(commandQueue);
+        }
+        public void Clear(){
+            CL.ReleaseCommandQueue(commandQueue);
+            CL.ReleaseContext(Gpu_context);
+            CL.ReleaseDevice(Gpu_1);
         }
 
+        public void ClearBuffer(CLBuffer b){
+            CL.EnqueueUnmapMemoryObject(commandQueue,b,IntPtr.Zero,0,null,out event0);
+            CL.ReleaseMemoryObject(b);
+            
+        }
+        
     }
 }

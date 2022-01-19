@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cloth.classes
+namespace PhysicObject.classes
 {
     public struct Particule{
 
@@ -24,5 +24,13 @@ namespace Cloth.classes
         public float radius {get; set; }
 
         public float roughness {get;set;}
+
+        public static Vector3 GetOrbitalSpeed(Particule p1,Particule p2, Vector3 normal,UniversSettings univers){
+                float dist = Vector3.Distance(p2.position,p1.position);
+                float total_mass = p1.mass + p2.mass;
+                float speed = (float)Math.Sqrt((univers.G*total_mass)/dist);
+
+                return p1.velocity + Vector3.Normalize(Vector3.Cross(p2.position - p1.position,normal)) * speed;  
+        }
     }
 }

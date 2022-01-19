@@ -19,7 +19,6 @@ struct Particule_obj{
     float roughness;
 };
 
-
 struct Vector3 V3Add(struct Vector3 V1,struct Vector3 V2){
     struct Vector3 resutl;
     
@@ -41,9 +40,12 @@ struct Vector3 V3fmul(struct Vector3 V1,float v){
 }
 
 
-__kernel void ComputePosition(__global struct Univers *uni, __global struct Particule_obj *input, __global struct Particule_obj *output){
+__kernel void ComputeVel(__global struct Univers *uni,__global struct Particule_obj *input, __global struct Particule_obj *output){
 
 	int index = get_global_id(0);
 
-    output[index].position = V3Add(input[index].position,V3fmul(input[index].velocity,uni[0].dt));
+    output[index] = input[index];
+
+    output[index].velocity = V3Add(input[index].velocity,V3fmul(input[index].acceleration,uni[0].dt));
+
 };

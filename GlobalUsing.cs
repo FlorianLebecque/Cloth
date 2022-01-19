@@ -4,4 +4,5 @@ global using System.Numerics;
 
 
 
-global using Cloth.classes;
+global using PhysicObject.classes;
+global using PhysicObject.classes.tree;

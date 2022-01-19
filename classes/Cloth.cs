@@ -23,7 +23,6 @@ namespace PhysicObject.classes {
 
         private float rest_distance;
         private float max_distance;
-        private float roughtness;
 
         public Raylib_cs.Color color;
 

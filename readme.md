@@ -1,6 +1,6 @@
 # Gravity and cloth simulation
 
-[Demonstration](https://youtu.be/OgrpkbtYH7w)
+[![Demonstration](https://i9.ytimg.com/vi/OgrpkbtYH7w/mq3.jpg?sqp=CJycoY8G&rs=AOn4CLC7IMwjx0XfkJ0EWcewy8TQD8NpQA)](https://youtu.be/OgrpkbtYH7w)
 
 ## Force simulated :
 - Gravity

@@ -82,7 +82,7 @@ void main()
             vec3 viewDir = normalize(viewPos - worldPosition);
 
             
-            specular += pow(clamp(dot(viewDir, reflectDir), 0.1, 0.5), 32) * dist;
+            specular += pow(clamp(dot(viewDir, reflectDir), 0.1, 1), 16) * dist;
         }
     }
 

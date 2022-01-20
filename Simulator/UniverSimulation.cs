@@ -25,7 +25,10 @@ namespace Simulator {
         ClothSimulation[] clothes_sim;
         public Octree UniversTree;
         static GPU computeGPU;
-
+        static CLKernel kComputeGravity;
+        static CLKernel kComputeVel;
+        static CLKernel kComputePos;
+        static CLKernel kComputeCollision ;
         CLBuffer bUniver;
         CLBuffer B1;
         CLBuffer B2;
@@ -34,10 +37,7 @@ namespace Simulator {
         CLBuffer bOctree_regions;
         CLBuffer bOctree_settings;
 
-        static CLKernel kComputeGravity;
-        static CLKernel kComputeVel;
-        static CLKernel kComputePos;
-        static CLKernel kComputeCollision ;
+
 
         OctreeSettings[] OCS;
         bool started = false;

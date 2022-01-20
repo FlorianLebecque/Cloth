@@ -22,6 +22,7 @@ const float quality = 10;            // Defines size factor: Lower = smaller glo
 const float TWO_PI = 6.28318531;
 const float ANGLE_INC = TWO_PI/20;
 const float DIST_INC = 1;
+const int ENABLE = 1; 
 
 void main()
 {
@@ -47,6 +48,8 @@ void main()
     }
 
     float nbr = (TWO_PI/ANGLE_INC) * (Distance/DIST_INC);
+
+    sum *= ENABLE;
 
     // Calculate final fragment color
     finalColor = ((sum/(nbr)) + source)*colDiffuse;

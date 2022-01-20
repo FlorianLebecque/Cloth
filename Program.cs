@@ -47,8 +47,7 @@ class Program{
         Menu menu = new Menu(camera);
         menu.Add("2 Rings with cloth and planet collision");
         menu.Add("Cloth on a sphere");
-        //menu.Add("2 Rings and a lot of particule");
-        //menu.Add("the first one but in very small");
+
 
         /*
             Main loop
@@ -71,7 +70,7 @@ class Program{
                     loaded = false;
                     selected = -1;
                     //univer_simulation.Clear();
-                }           
+                }
 
                 univer_simulation.Run();
                 renderer.Run(univer_simulation);

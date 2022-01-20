@@ -68,8 +68,10 @@ namespace Renderer
             Model initialisation
             */
             
-            //Mesh sphere = GenMeshSphere(1f,20,20);
+
             Model model = LoadModel("resources/models/sphere.obj");
+            Model sumMd = LoadModel("resources/models/sphere.obj");
+            PD.sunMd = sumMd;
             lightShader = LoadShader("resources/shaders/base_lighting.vs","resources/shaders/lighting.fs");
             loc_vector_view = GetShaderLocation(lightShader,"viewPos");
 
@@ -138,7 +140,7 @@ namespace Renderer
                         us.UniversTree.Draw();
 
                         //draw velocity and acceleration vector for selected particule
-                        DrawLine3D(us.output_enties[current_view].position,us.output_enties[current_view].position + (Vector3.Add(us.output_enties[current_view].velocity,Vector3.Normalize(us.output_enties[current_view].velocity) * us.output_enties[current_view].radius)),Color.DARKPURPLE);
+                        DrawLine3D(us.output_enties[current_view].position,us.output_enties[current_view].position + (Vector3.Add(us.output_enties[current_view].velocity,Vector3.Normalize(us.output_enties[current_view].velocity) * us.output_enties[current_view].radius)),Color.PINK);
                         DrawLine3D(us.output_enties[current_view].position,us.output_enties[current_view].position + (Vector3.Add(us.output_enties[current_view].acceleration,Vector3.Normalize(us.output_enties[current_view].acceleration) * us.output_enties[current_view].radius)),Color.ORANGE);
                     
                         current_cube.center = us.output_enties[current_view].position;

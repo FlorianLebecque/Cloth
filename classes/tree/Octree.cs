@@ -243,7 +243,7 @@ namespace PhysicObject.classes.tree {
 
         public void Draw(){
             for(int i = 0; i < region_counter; i++){
-                regions[i].region.Draw(cl);
+                regions[i].region.Draw(Color.DARKPURPLE);
             }
         }
 

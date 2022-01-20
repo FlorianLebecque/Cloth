@@ -29,10 +29,10 @@ namespace Univers {
 
             List<Ring> RingsList = new();
 
-            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.5f);
-            Particule Sun2 = new Particule(new Vector3(20, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,0.95f,0.5f);
+            Particule Sun = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 100000f,50,0.95f,0.9f);
+            Particule Sun2 = new Particule(new Vector3(20, 0f, 4800), new Vector3(0, 0f, -200), 100000,50f,0.95f,0.9f);
 
-            Particule Cloth_Planet   = new Particule(new Vector3(0f, 200, 0f), new Vector3(0f, -300, 0), 500,15,0.5f,0.01f);
+            Particule Cloth_Planet   = new Particule(new Vector3(0f, 205, 0f), new Vector3(0f, 0, 0), 500,15,0.9f,1f);
             Cloth_Planet.velocity = Particule.GetOrbitalSpeed(Sun,Cloth_Planet,new Vector3(-1,0,0),univers);
 
             Particule Orbital_planet = new Particule(new Vector3(20, 0, 4500), new Vector3(0, 0f, 0), 500,15,0.6f,0.01f);
@@ -56,6 +56,7 @@ namespace Univers {
             Cloth.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1.5f,-1));
 
             Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
+            MainRing.nbr_particul = 2000;
             MainRing.radius_factor = 10f;
             MainRing.min_mass = 0.1f;
             MainRing.max_mass = 0.2f;

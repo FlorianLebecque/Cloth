@@ -231,7 +231,7 @@ namespace Univers {
             clothList   = new();
 
 
-            ParticulText.CreateText("hello",Vector3.Zero,entities,colors);
+            //ParticulText.CreateText("hello",Vector3.Zero,entities,colors);
 
         }
 
@@ -380,9 +380,17 @@ namespace Univers {
             colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
 
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(0),50f,60f,2f,3);
+            SoftPlanet sp = new SoftPlanet(new Vector3(100,0,0),50f,60f,2f,3);
 
             SphereGenerator.CreateSphere(univers,entities,colors,sp);
+
+            for(int i = 1;i < entities.Count();i++){
+
+                Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[0], entities[i],Vector3.One,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
+
+                entities[i] = n;
+            }
+
         }
 
     }

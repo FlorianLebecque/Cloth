@@ -83,7 +83,7 @@ class Program{
         
         switch(selected){
             case 0:
-                UniversCreator.CreateUnivers1(WORLD_UP);
+                UniversCreator.CreateTestUniver(WORLD_UP);
                 break;
             case 1:
                 UniversCreator.CreateUnivers2(WORLD_UP);

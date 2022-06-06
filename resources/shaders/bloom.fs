@@ -20,8 +20,8 @@ const float Distance = 10.0;          // Pixels per axis; higher = bigger glow, 
 const float quality = 10;            // Defines size factor: Lower = smaller glow, better quality
 
 const float TWO_PI = 6.28318531;
-const float ANGLE_INC = TWO_PI/20;
-const float DIST_INC = 1;
+const float ANGLE_INC = TWO_PI/40;
+const float DIST_INC = 0.5;
 const int ENABLE = 1; 
 
 void main()
@@ -38,12 +38,7 @@ void main()
             int x = int( d * cos(a) );
             int y = int(-d * sin(a) );
 
-            //if((x < resolution.x)&&(x>=0)&&(y >= 0)&&(y < resolution.y)){
-                sum += texture(texture0, fragTexCoord + vec2(x, y)*sizeFactor);
-
-            //}
-
-
+            sum += texture(texture0, fragTexCoord + vec2(x, y)*sizeFactor);
         }
     }
 
@@ -52,5 +47,5 @@ void main()
     sum *= ENABLE;
 
     // Calculate final fragment color
-    finalColor = ((sum/(nbr)) + source)*colDiffuse;
+    finalColor = ((sum/(nbr*0.8)) + source)*colDiffuse;
 }

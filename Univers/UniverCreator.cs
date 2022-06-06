@@ -224,6 +224,17 @@ namespace Univers {
             }
         }
 
+        public static void CreateUniversal(Vector3 WORLD_UP){
+            univers = new UniversSettings(20f,0.01f);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+
+            ParticulText.CreateText("hello",Vector3.Zero,entities,colors);
+
+        }
+
         public static void CreateMiniUniver(Vector3 WORLD_UP){
             univers = new UniversSettings(8f,0.002f);
 
@@ -350,6 +361,28 @@ namespace Univers {
                 RingGenerator.CreateRing(univers,entities,colors,ring);
             }
 
+        }
+
+        public static void CreateTestUniver(Vector3 WORLD_UP){
+
+            univers = new UniversSettings(20f,0.01f);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+            Particule Sun = new Particule(new Vector3(100, 0, 0), new Vector3(0f, 0f, 0f), 100f,1,0.95f,0.9f);
+            entities.Add(Sun);
+            Particule Sun2 = new Particule(new Vector3(-100, 0, 0), new Vector3(0f, 0f, 0f), 1f,0.5f,0.95f,0.9f);
+            entities.Add(Sun2);
+
+
+            colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
+            colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
+
+
+            SoftPlanet sp = new SoftPlanet(new Vector3(0),50f,60f,2f,3);
+
+            SphereGenerator.CreateSphere(univers,entities,colors,sp);
         }
 
     }

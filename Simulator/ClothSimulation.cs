@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ClothSimulator;
+
 using OPENCL;
 using OpenTK.Compute.OpenCL;
 
@@ -20,10 +22,10 @@ namespace Simulator {
         CLKernel kComputeSpringForce;
         CLKernel kComputeSpring;
 
-        Cloth cloth;
+        ICloth cloth;
         int springCount;
         int particuleCount;
-        public ClothSimulation(GPU cGPU,Cloth c,CLBuffer readParticuleBuffer){
+        public ClothSimulation(GPU cGPU,ICloth c,CLBuffer readParticuleBuffer){
             computeGPU = cGPU;
 
             bSprings       = computeGPU.CreateBuffer<Spring>(MemoryFlags.ReadWrite,c.springs.ToArray());

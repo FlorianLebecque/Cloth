@@ -49,7 +49,7 @@ namespace Univers {
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
             Cloth drape2 = new Cloth(new Vector3(400,0,0),30,30,4f,entities,colors,Color.SKYBLUE);      //fill the entities array with all the tissue particule
-            Cloth drape = new Cloth(new Vector3(0,-200,2),30,30,4f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
+            Cloth drape  = new Cloth(new Vector3(0,-200,2),30,30,4f,entities,colors,Color.BROWN);      //fill the entities array with all the tissue particule
 
 
             Cloth.SetOrbitalSpeed(drape,entities,0,univers,new Vector3(-1,0,0));
@@ -370,21 +370,22 @@ namespace Univers {
             colors      = new();
             clothList   = new();
 
-            Particule Sun = new Particule(new Vector3(100, 0, 0), new Vector3(0f, 0f, 0f), 100f,1,0.95f,0.9f);
-            entities.Add(Sun);
-            Particule Sun2 = new Particule(new Vector3(-100, 0, 0), new Vector3(0f, 0f, 0f), 1f,0.5f,0.95f,0.9f);
+            Particule Sun = new Particule(new Vector3(-100, 0, 0), new Vector3(0f, 0f, 0f), 100f,1,0.95f,0.9f);
+            Particule Sun2 = new Particule(new Vector3(100, 0, 0), new Vector3(0f, 0f, 0f), 100050f,10.5f,0.95f,0.9f);
+
             entities.Add(Sun2);
+            entities.Add(Sun);
 
 
+            colors.Add(new Raylib_cs.Color(237, 217, 200 ,0));
             colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
-            colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
 
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(100,0,0),50f,60f,2f,3);
+            SoftPlanet sp = new SoftPlanet(new Vector3(100,0,0),50f,165f,1.5f,4);
 
             SphereGenerator.CreateSphere(univers,entities,colors,sp);
 
-            for(int i = 1;i < entities.Count();i++){
+            for(int i = 2;i < entities.Count();i++){
 
                 Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[0], entities[i],Vector3.One,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
 

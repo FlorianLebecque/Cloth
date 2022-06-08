@@ -11,20 +11,21 @@ using static Raylib_cs.CameraProjection;
 using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.ShaderLocationIndex;
 using static Raylib_cs.MaterialMapIndex;
+using ClothSimulator;
 
 namespace PhysicObject.classes {
-    public class Cloth {
+    public class Cloth : ICloth {
 
-        public Spring[] springs;
+        public Spring[] springs {get;}
 
-        public Spring_force[] spring_forces;     //create an array for each springs
+        public Spring_force[] spring_forces {get;}     //create an array for each springs
          
-        public Cloth_settings settings;
+        public Cloth_settings settings {get;}
 
         private float rest_distance;
         private float max_distance;
 
-        public Raylib_cs.Color color;
+        public Raylib_cs.Color color {get;}
 
         public static ClothParameter parameter = new();
 
@@ -42,7 +43,6 @@ namespace PhysicObject.classes {
 
             int offset = entites.Count();
 
-            settings = new Cloth_settings(offset,n*m,0);
 
             float start_pos_x = position.X - (n*rest_distance)/2;
             float start_pos_z = position.Z - (m*rest_distance)/2;
@@ -178,7 +178,7 @@ namespace PhysicObject.classes {
                 }
             }
 
-            settings.nbr_spring = spring_list.Count();
+            settings = new Cloth_settings(offset,n*m,spring_list.Count());
 
             springs = spring_list.ToArray();
             spring_forces = new Spring_force[springs.Count()];

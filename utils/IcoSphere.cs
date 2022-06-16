@@ -13,9 +13,11 @@ public class IcoSphere{
         vertices = SubdivideTriangles(vertices,subdivision);
         vertices = FilterDuplicateVertices(vertices);
 
-        triangles = GetGraph(vertices);
 
         vertices = MapToSphere(vertices,radius);
+
+        triangles = GetGraph(vertices);
+
     }
 
     //generate an array of triangles making a icosahedron
@@ -150,27 +152,35 @@ public class IcoSphere{
         return newVertices;
     }
 
+
     private static Dictionary<int,int[]> GetGraph(Vector3[] vertices){
         //create a dictionary of vertices
         Dictionary<int,int[]> graph = new Dictionary<int,int[]>();
-        //for each vertex
+
+
+        //for each vertex in the array of vertices
         for(int i = 0; i < vertices.Length; i++){
-            //create an array of vertices
-            int[] verticesArray = new int[0];
-            //for each vertex
+            Dictionary<int,float> distances = new Dictionary<int,float>();
+
+            //get the distance between the vertex and all the other vertices
             for(int j = 0; j < vertices.Length; j++){
-                //if the vertex is not the same
-                if(i != j){
-                    //if the distance between the vertices is less than 0.5
-                    if(Vector3.Distance(vertices[i],vertices[j]) < distance){
-                        //add the vertex to the array
-                        verticesArray = verticesArray.Concat(new int[]{j}).ToArray();
+                //if the vertex is not the same as the current vertex
+                if(j != i){
+                    //if the distance is not in the dictionary
+                    if(!distances.ContainsKey(j)){
+                        //add it to the dictionary
+                        distances.Add(j,Vector3.Distance(vertices[i],vertices[j]));
                     }
                 }
             }
-            //add the array to the dictionary
-            graph.Add(i,verticesArray);
+            
+            //get the 6 closest vertices
+            Dictionary<int,float> closestVertices = distances.OrderBy(x => x.Value).Take(6).ToDictionary(x => x.Key,x => x.Value);
+
+            graph.Add(i,closestVertices.Keys.ToArray());
         }
+            
+                
         return graph;
     }
 

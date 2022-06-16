@@ -90,7 +90,7 @@ public class IcoSphereCloth : ICloth{
             //create a spring between the current vertex and the connected one
             foreach(int t in triangles[i]){
                 float d = Vector3.Distance(icosahedron[t], icosahedron[i]);
-                Spring spring_ = new Spring(d,7*d,softPlanet.pressure,offset+i,offset+t,2);
+                Spring spring_ = new Spring(d,7*d,softPlanet.pressure,offset+1+i,offset+1+t,2);
                 spring_list.Add(spring_);
             }
 

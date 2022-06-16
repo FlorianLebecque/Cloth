@@ -20,7 +20,7 @@ namespace PhysicObject.classes {
         public float particule_radius;
         public float pressure;
 
-        public SoftPlanet(Vector3 position_,float mass_,float radius_,float particule_size,int subdivision_){
+        public SoftPlanet(Vector3 position_,float mass_,float radius_,float particule_size,int subdivision_,float pressure_){
             
             position = position_;
 
@@ -30,8 +30,10 @@ namespace PhysicObject.classes {
             mass = mass_;
             particule_radius = particule_size;
 
+            pressure = pressure_;
+
             bounciness = 0.5f;
-            roughness = 0.1f;
+            roughness = 1f;
         }
     }
 }

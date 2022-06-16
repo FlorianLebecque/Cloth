@@ -5,12 +5,16 @@ namespace Gravity.utils;
 public class IcoSphere{
 
     private Vector3[] vertices;
-
+    private Dictionary<int,int[]> triangles;
+    private static float distance;
     public IcoSphere(float radius,int subdivision){
 
         vertices = Icosahedron();
         vertices = SubdivideTriangles(vertices,subdivision);
         vertices = FilterDuplicateVertices(vertices);
+
+        triangles = GetGraph(vertices);
+
         vertices = MapToSphere(vertices,radius);
     }
 
@@ -60,6 +64,9 @@ public class IcoSphere{
     //subdivide a triangle
     private static Vector3[] SubdivideTriangle(Vector3[] triangle){
         
+        //distance between the vertices of the triangle
+        distance = Vector3.Distance(triangle[0],triangle[1]);
+
         //midle of point 1 and 2
         Vector3 middle1 = (triangle[0] + triangle[1])/2;
         //midle of point 2 and 3
@@ -143,6 +150,31 @@ public class IcoSphere{
         return newVertices;
     }
 
+    private static Dictionary<int,int[]> GetGraph(Vector3[] vertices){
+        //create a dictionary of vertices
+        Dictionary<int,int[]> graph = new Dictionary<int,int[]>();
+        //for each vertex
+        for(int i = 0; i < vertices.Length; i++){
+            //create an array of vertices
+            int[] verticesArray = new int[0];
+            //for each vertex
+            for(int j = 0; j < vertices.Length; j++){
+                //if the vertex is not the same
+                if(i != j){
+                    //if the distance between the vertices is less than 0.5
+                    if(Vector3.Distance(vertices[i],vertices[j]) < distance){
+                        //add the vertex to the array
+                        verticesArray = verticesArray.Concat(new int[]{j}).ToArray();
+                    }
+                }
+            }
+            //add the array to the dictionary
+            graph.Add(i,verticesArray);
+        }
+        return graph;
+    }
+
+
     //map to sphere vertices
     private static Vector3[] MapToSphere(Vector3[] vertices,float radius){
         //create a new array of vertices
@@ -158,5 +190,10 @@ public class IcoSphere{
     public Vector3[] GetVertices(){
         return vertices;
     }
+
+    public Dictionary<int,int[]> GetTriangles(){
+        return triangles;
+    }
+
 
 }

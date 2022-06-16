@@ -47,7 +47,7 @@ namespace Univers {
             colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(20, 0, 4500),300f,20f,2f,2,400);
+            SoftPlanet sp = new SoftPlanet(new Vector3(20, 0, 4500),Vector3.One,300f,20f,2f,2,400);
             IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
 
             for(int i = 3;i < entities.Count();i++){
@@ -386,57 +386,36 @@ namespace Univers {
             entities    = new();
             colors      = new();
             clothList   = new();
-/*
-            Particule earth = new Particule(
-                new Vector3(0,-1400,0),Vector3.Zero,
-                15000000f,1000,0,100
-            );
 
+            
             Particule mountain = new Particule(
                 new Vector3(0,0,0),Vector3.Zero,
                 0,50,0,5
             );
-
-            Particule block1 = new Particule(
-                new Vector3(-20,-400,-20),Vector3.Zero,
-                0,1,0,0
-            );
-
-            Particule block2 = new Particule(
-                new Vector3(-20,-400,20),Vector3.Zero,
-                0,1,0,0
-            );
-
-            Particule block3 = new Particule(
-                new Vector3(20,-400,-20),Vector3.Zero,
-                0,1,0,0
-            );
-
-            Particule block4 = new Particule(
-                new Vector3(20,-400,20),Vector3.Zero,
-                0,1,0,0
-            );
+            //entities.Add(mountain);
+            //colors.Add(new Color(255,255,255,255));
 
 
-            entities.Add(mountain);
-            entities.Add(earth);
-
-            entities.Add(block1);
-            entities.Add(block2);
-            entities.Add(block3);
-            entities.Add(block4);
-
-            colors.Add(new Color(255,255,255,255));
-            colors.Add(new Color(255,255,255,5));
-            colors.Add(new Color(255,255,255,5));
-            colors.Add(new Color(255,255,255,5));
-            colors.Add(new Color(255,255,255,5));
-            colors.Add(new Color(255,255,255,5));
-*/
-
-            SoftPlanet sp = new SoftPlanet(new Vector3(0,200,0),300f,100,3f,1,300);
+            SoftPlanet sp = new SoftPlanet(new Vector3(0,500,10),new Vector3(0,-50,0),1000f,100,2f,4,300);
 
             IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
+
+            
+
+            Particule earth = new Particule(
+                new Vector3(0,0,0),Vector3.Zero,
+                90000f,200,0.5f,100
+            );
+
+            entities.Add(earth);
+            colors.Add(new Color(255,255,255,255));
+/*
+            for(int i = 0;i < entities.Count()-1;i++){
+
+                Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[entities.Count()-1], entities[i],WORLD_UP,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
+
+                entities[i] = n;
+            }*/
 
             clothList.Add(ic);
 

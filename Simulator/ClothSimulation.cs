@@ -61,6 +61,9 @@ namespace Simulator {
             computeGPU.Download<Spring>(bSprings,cloth.springs);
         }
 
+        public Spring[] GetSprings(){
+            return cloth.springs;
+        }
         public void Clear(){
             computeGPU.ClearBuffer(bSprings);
             computeGPU.ClearBuffer(bSpringsForce);

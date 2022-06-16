@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using ClothSimulator;
 using Raylib_cs;
 
 
@@ -12,7 +12,7 @@ namespace Univers {
         public static UniversSettings univers;
         public static List<Particule> entities = new();
         public static List<Raylib_cs.Color> colors = new();
-        public static List<Cloth> clothList = new();
+        public static List<ICloth> clothList = new();
 
     
         public static void CreateUnivers1(Vector3 WORLD_UP){
@@ -370,27 +370,33 @@ namespace Univers {
             colors      = new();
             clothList   = new();
 
-            Particule Sun = new Particule(new Vector3(-100, 0, 0), new Vector3(0f, 0f, 0f), 100f,1,0.95f,0.9f);
-            Particule Sun2 = new Particule(new Vector3(100, 0, 0), new Vector3(0f, 0f, 0f), 100050f,10.5f,0.95f,0.9f);
+            Particule Sun = new Particule(new Vector3(-300, 0, 0), new Vector3(0f, 0f, 0f), 50000f,100,0.95f,0.9f);
+            //Particule Sun2 = new Particule(new Vector3(100, 0, 0), new Vector3(0f, 0f, 0f), 100f,10.5f,0.95f,0.9f);
 
-            entities.Add(Sun2);
+            //entities.Add(Sun2);
             entities.Add(Sun);
 
 
-            colors.Add(new Raylib_cs.Color(237, 217, 200 ,0));
             colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
+            //colors.Add(new Raylib_cs.Color(237, 217, 200 ,255));
 
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(100,0,0),50f,165f,1.5f,4);
+            SoftPlanet sp = new SoftPlanet(new Vector3(0,0,0),300f,30f,3f,2,150);
 
-            SphereGenerator.CreateSphere(univers,entities,colors,sp);
+            IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
 
+            //SphereGenerator.CreateSphere(univers,entities,colors,sp);
+            
             for(int i = 2;i < entities.Count();i++){
 
-                Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[0], entities[i],Vector3.One,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
+               // Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[0], entities[i],Vector3.One,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
+               Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[0], entities[i],Vector3.One,univers)/2,entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
 
                 entities[i] = n;
             }
+            
+
+            clothList.Add(ic);
 
         }
 

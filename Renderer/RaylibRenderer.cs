@@ -121,6 +121,15 @@ namespace Renderer
                     Rlgl.rlEnableDepthMask();
                     
                     PD.Draw(sphereModel,us.output_enties,colors);     //draw all particule
+
+                    foreach(Spring s in us.output_springs){
+                        if(s.broken==1){
+                            //DrawLine3D(us.output_enties[s.particul_1].position,us.output_enties[s.particul_2].position,Color.WHITE);
+                        }
+                           
+                    }
+                    
+
                 EndMode3D();
             EndTextureMode();
 

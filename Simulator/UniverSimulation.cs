@@ -13,7 +13,7 @@ using static Raylib_cs.Color;
 using static Raylib_cs.KeyboardKey;
 using static Raylib_cs.Raylib;
 
-
+using ClothSimulator;
 
 namespace Simulator {
     public class UniverSimulation {
@@ -21,6 +21,23 @@ namespace Simulator {
         public PhysicObject.classes.UniversSettings univers;
 
         public Particule[] output_enties ;
+
+        private List<Spring> springs;
+        public Spring[] output_springs {get{
+        
+            if(springs == null){
+                springs = new();
+            }
+            
+            springs.Clear();
+            foreach(ClothSimulation c in clothes_sim){
+                foreach(Spring s in c.GetSprings()){
+                    springs.Add(s);
+                }
+            }
+
+            return springs.ToArray();
+        }}
 
         ClothSimulation[] clothes_sim;
         public Octree UniversTree;
@@ -41,7 +58,7 @@ namespace Simulator {
 
         OctreeSettings[] OCS;
         bool started = false;
-        public UniverSimulation(PhysicObject.classes.UniversSettings u, List<Particule> entities,List<Cloth> Clothes){
+        public UniverSimulation(PhysicObject.classes.UniversSettings u, List<Particule> entities,List<ICloth> Clothes){
             univers = u;
 
             OCS = new OctreeSettings[1];
@@ -69,7 +86,7 @@ namespace Simulator {
             Init(entities,Clothes);
         }
 
-        private void Init(List<Particule> entities,List<Cloth> Clothes){
+        private void Init(List<Particule> entities,List<ICloth> Clothes){
 
             output_enties = entities.ToArray();
 

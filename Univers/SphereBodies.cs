@@ -60,7 +60,7 @@ public class IcoSphereCloth : ICloth{
         int offset = entities.Count();
         int count = icosahedron.Count()+1;
 
-        float mass = softPlanet.mass/(icosahedron.Length+1);
+        float mass = softPlanet.mass;
         float radius = softPlanet.particule_radius;
 
         //center particule of the icosphere
@@ -72,25 +72,28 @@ public class IcoSphereCloth : ICloth{
 
         List<Spring> spring_list = new List<Spring>();
 
+
+        float cd = softPlanet.pressure / (100 * softPlanet.subdivision);
+
         //generate a particule for each vertex of the icosahedron
         for(int i = 0; i < icosahedron.Length; i++){
      
-            Particule p = new Particule(icosahedron[i] + softPlanet.position,new Vector3(0),mass,radius,softPlanet.bounciness,softPlanet.roughness);
+            Particule p = new Particule(icosahedron[i] + softPlanet.position,softPlanet.velocity,(mass/icosahedron.Length),radius,softPlanet.bounciness,softPlanet.roughness);
 
             //distance between the center and the particule
             float distance = Vector3.Distance(center.position,p.position);
 
 
             //create a spring between the center and the particule
-            
-            Spring spring = new Spring(distance,7*distance,softPlanet.pressure,offset,(offset+1+i),2);
+            Spring spring = new Spring(distance,7*distance,(softPlanet.pressure),offset,(offset+1+i),cd);
             spring_list.Add(spring);
 
+            
 
             //create a spring between the current vertex and the connected one
             foreach(int t in triangles[i]){
                 float d = Vector3.Distance(icosahedron[t], icosahedron[i]);
-                Spring spring_ = new Spring(d,7*d,softPlanet.pressure,offset+1+i,offset+1+t,2);
+                Spring spring_ = new Spring(d,7*d,softPlanet.pressure,offset+1+i,offset+1+t,cd);
                 spring_list.Add(spring_);
             }
 

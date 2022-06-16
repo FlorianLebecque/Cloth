@@ -11,6 +11,8 @@ namespace PhysicObject.classes {
     public class SoftPlanet {
         
         public Vector3 position;
+
+        public Vector3 velocity;
         public int subdivision;
         public float mass;
         public float radius;
@@ -20,9 +22,10 @@ namespace PhysicObject.classes {
         public float particule_radius;
         public float pressure;
 
-        public SoftPlanet(Vector3 position_,float mass_,float radius_,float particule_size,int subdivision_,float pressure_){
+        public SoftPlanet(Vector3 position_,Vector3 speed_,float mass_,float radius_,float particule_size,int subdivision_,float pressure_){
             
             position = position_;
+            velocity = speed_;
 
             radius = radius_;
             subdivision = subdivision_;

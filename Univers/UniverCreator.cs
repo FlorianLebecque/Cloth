@@ -47,7 +47,7 @@ namespace Univers {
             colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
             colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(20, 0, 4500),Vector3.One,300f,20f,2f,2,400);
+            SoftPlanet sp = new SoftPlanet(new Vector3(20, 0, 4500),Vector3.One,200f,30f,2f,2,800);
             IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
 
             for(int i = 3;i < entities.Count();i++){
@@ -67,12 +67,12 @@ namespace Univers {
             Cloth.SetOrbitalSpeed(drape2,entities,0,univers,new Vector3(0,-1.5f,-1));
 
             Ring MainRing = new Ring(entities,0,new Vector3(0,1.5f,1f), 6,9);
-            MainRing.nbr_particul = 2000;
+            MainRing.nbr_particul = 1500;
             MainRing.radius_factor = 10f;
             MainRing.min_mass = 0.1f;
             MainRing.max_mass = 0.2f;
             Ring SecRing = new Ring(entities,0,new Vector3(0,1,1), 11,12);
-            SecRing.nbr_particul = 2000;
+            SecRing.nbr_particul = 1500;
             SecRing.min_mass = 0.1f;
             SecRing.max_mass = 0.2f;
             SecRing.radius_factor = 10f;

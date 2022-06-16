@@ -47,6 +47,7 @@ class Program{
         Menu menu = new Menu(camera);
         menu.Add("2 Rings with cloth and planet collision");
         menu.Add("Cloth on a sphere");
+        menu.Add("Soft sphere on a sphere");
 
 
         /*
@@ -83,13 +84,13 @@ class Program{
         
         switch(selected){
             case 0:
-                UniversCreator.CreateTestUniver(WORLD_UP);
+                UniversCreator.CreateUnivers1(WORLD_UP);
                 break;
             case 1:
                 UniversCreator.CreateUnivers2(WORLD_UP);
                 break;
             case 2:
-                UniversCreator.CreateUnivers3(WORLD_UP);
+                UniversCreator.CreateUnivers4(WORLD_UP);
                 break;
             case 3:
                 UniversCreator.CreateMiniUniver(WORLD_UP);

@@ -138,7 +138,7 @@ bool IsInCube(struct Cube c, struct Particule_obj p){
     return IsX && IsY && IsZ;
 }
 
-void collision(struct Univers *uni,struct Particule_obj *input,struct Particule_obj *output,int index,int i){
+void collision(__global struct Univers *uni,__global struct Particule_obj *input,__global struct Particule_obj *output,int index,int i){
 
     float dist = V3Distance(input[index].position,input[i].position);
 
@@ -191,7 +191,7 @@ void collision(struct Univers *uni,struct Particule_obj *input,struct Particule_
     
 }
 
-int getParticules(struct OctreeSettings *ts,struct Region *regions,int *treeData,struct Univers *uni,struct Particule_obj *input,struct Particule_obj *output,struct Cube space){
+int getParticules(__global struct OctreeSettings *ts,__global struct Region *regions,__global int *treeData,__global struct Univers *uni,__global struct Particule_obj *input,__global struct Particule_obj *output,struct Cube space){
     int region_queue[10000];    //array of the regions indexes (only the one we should check)
     region_queue[0] = 0;        //set the first region to check (the one whose index is 0)
 

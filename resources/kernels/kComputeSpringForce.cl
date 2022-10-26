@@ -24,7 +24,7 @@ struct Spring{
     int particul_1;
     int particul_2;
 
-    int broken
+    int broken;
 };
 
 struct Spring_force{

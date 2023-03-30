@@ -205,7 +205,6 @@ namespace PhysicObject.classes.tree {
 
             regions[0].count = 0;
             regions[0].subdivided = false;
-
         }
 
         public void GenParticulesArray(){

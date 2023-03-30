@@ -55,11 +55,14 @@ namespace Simulator {
         CLBuffer bOctree_settings;
 
 
+        UniversSettings[] settings;
 
         OctreeSettings[] OCS;
         bool started = false;
         public UniverSimulation(PhysicObject.classes.UniversSettings u, List<Particule> entities,List<ICloth> Clothes){
             univers = u;
+
+            settings = new UniversSettings[1] {univers};
 
             OCS = new OctreeSettings[1];
 
@@ -143,7 +146,8 @@ namespace Simulator {
             if(!started)
                 return;
                 
-            UniversTree = new Octree(16,output_enties.Count());
+            UniversTree.Clear();
+            //UniversTree = new Octree(16,output_enties.Count());
             UniversTree.inserts(output_enties);
             UniversTree.GenParticulesArray();
 
@@ -177,7 +181,7 @@ namespace Simulator {
                 }else{
                     univers.dt += 0.0001f;
                 }
-                computeGPU.Upload<PhysicObject.classes.UniversSettings>(bUniver, new PhysicObject.classes.UniversSettings[1]{ univers });
+                computeGPU.Upload<UniversSettings>(bUniver, settings);
             }
 
             if(IsKeyDown(KEY_KP_SUBTRACT)){
@@ -189,7 +193,7 @@ namespace Simulator {
                 if(univers.dt <= 0){
                     univers.dt = 0;
                 }
-                computeGPU.Upload<PhysicObject.classes.UniversSettings>(bUniver, new PhysicObject.classes.UniversSettings[1]{ univers });
+                computeGPU.Upload<UniversSettings>(bUniver, settings);
             }
 
             if(IsKeyPressed(KEY_SPACE)){

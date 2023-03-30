@@ -37,6 +37,8 @@ namespace Renderer
         Vector3 CamTarget;
         Vector3 CamObj;
 
+        Vector3 dir;
+
         float[] cam_pos;
 
         public RaylibRenderer(Camera3D c, List<Color> color_l){
@@ -121,13 +123,14 @@ namespace Renderer
                     Rlgl.rlEnableDepthMask();
                     
                     PD.Draw(sphereModel,us.output_enties,colors);     //draw all particule
-
+                    /*
                     foreach(Spring s in us.output_springs){
-                        if(s.broken==1){
-                            //DrawLine3D(us.output_enties[s.particul_1].position,us.output_enties[s.particul_2].position,Color.WHITE);
-                        }
+                        //if(s.broken==1){
+                            DrawLine3D(us.output_enties[s.particul_1].position,us.output_enties[s.particul_2].position,Color.);
+                        //}
                            
                     }
+                    */
                     
 
                 EndMode3D();
@@ -179,7 +182,7 @@ namespace Renderer
         private void UpdateCamera(){
             Raylib.UpdateCamera(ref camera); 
 
-            Vector3 dir = Vector3.Normalize(CamObj - CamTarget);
+            dir = Vector3.Normalize(CamObj - CamTarget);
             float speed =  (CamObj-CamTarget).Length()/4;
             if((CamObj != CamTarget)&&((CamObj-CamTarget).Length()>=0.5)){
                 CamTarget += dir*speed;

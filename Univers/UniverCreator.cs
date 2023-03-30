@@ -382,34 +382,25 @@ namespace Univers {
 
             RingGenerator.rnd = rnd;
 
-            univers = new UniversSettings(10f,0.01f);
+            univers = new UniversSettings(20f,0.01f);
             entities    = new();
             colors      = new();
             clothList   = new();
 
-            
-            Particule mountain = new Particule(
-                new Vector3(0,0,0),Vector3.Zero,
-                0,50,0,5
-            );
-            //entities.Add(mountain);
-            //colors.Add(new Color(255,255,255,255));
 
+            SoftPlanet sp = new SoftPlanet(new Vector3(0,500,10),new Vector3(75,-150,0),750f,100,2f,4,200);
 
-            SoftPlanet sp = new SoftPlanet(new Vector3(0,500,10),new Vector3(0,-50,0),1000f,100,2f,4,300);
-
-            IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
-
-            
 
             Particule earth = new Particule(
                 new Vector3(0,0,0),Vector3.Zero,
-                90000f,200,0.5f,100
+                100000f,200,0.0f,1
             );
 
             entities.Add(earth);
-            colors.Add(new Color(255,255,255,255));
-/*
+            colors.Add(new Color(100,100,100,255));
+            IcoSphereCloth ic = new IcoSphereCloth(sp,entities,colors,Color.SKYBLUE);
+
+            /*
             for(int i = 0;i < entities.Count()-1;i++){
 
                 Particule n = new Particule(entities[i].position,Particule.GetOrbitalSpeed(entities[entities.Count()-1], entities[i],WORLD_UP,univers),entities[i].mass,entities[i].radius,entities[i].bounciness,entities[i].roughness);
@@ -420,6 +411,28 @@ namespace Univers {
             clothList.Add(ic);
 
 
+        }
+
+
+        public static void CreateOrlaneUnivers(Vector3 WORLD_UP){
+
+            univers = new UniversSettings(66.46716430353791f,0.0005f);
+            entities    = new();
+            colors      = new();
+            clothList   = new();
+
+            Particule Sun   = new Particule(new Vector3(0, 0, 0), new Vector3(0f, 0f, 0f), 1988100f,50,0.95f,0.9f);
+            Particule Earth = new Particule(new Vector3(0, -145.1f, 0), new Vector3(953.986248f, 0f, 0f), 5.9721f,0.6f,0.95f,0.9f);
+            Particule Astro = new Particule(new Vector3(100f, 200f, 0), new Vector3(-471.01355263553893f, -1171.135185044685f, 0f), 0.0001f,0.2f,0.95f,0.9f);
+            
+            entities.Add(Sun);
+            entities.Add(Earth);      //secondary sun (far away)
+
+            entities.Add(Astro);
+
+            colors.Add(new Raylib_cs.Color(237, 217, 200   ,255));
+            colors.Add(new Raylib_cs.Color(255  , 150, 30 ,255));
+            colors.Add(new Raylib_cs.Color(49 , 224, 0   ,255));
         }
 
     }

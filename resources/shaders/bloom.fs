@@ -38,6 +38,10 @@ void main()
             int x = int( d * cos(a) );
             int y = int(-d * sin(a) );
 
+            // check that 'fragTexCoord + vec2(x, y)*sizeFactor' is inside the texture
+            if(fragTexCoord.x + x*sizeFactor.x < 0 || fragTexCoord.x + x*sizeFactor.x > 1 || fragTexCoord.y + y*sizeFactor.y < 0 || fragTexCoord.y + y*sizeFactor.y > 1)
+                continue;
+
             sum += texture(texture0, fragTexCoord + vec2(x, y)*sizeFactor);
         }
     }

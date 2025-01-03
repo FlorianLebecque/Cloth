@@ -19,6 +19,9 @@ out vec3 fragPosition;
 out vec3 fragNormal;
 
 
+
+
+
 // NOTE: Add here your custom variables
 
 void main()
@@ -33,4 +36,5 @@ void main()
 
     // Calculate final vertex position
     gl_Position = mvp*vec4(vertexPosition, 1.0);
+
 }

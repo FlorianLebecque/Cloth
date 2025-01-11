@@ -6,14 +6,14 @@
     This header file contains the functions for the Vector3 struct. used in OpenCL
 */
 
+float V3LengthSquared(struct Vector3 V1)
+{
+    return (V1.X * V1.X) + (V1.Y * V1.Y) + (V1.Z * V1.Z);
+}
+
 float V3Length(struct Vector3 V1)
 {
     return sqrt(V3LengthSquared(V1));
-}
-
-float V3LengthSquared(struct Vector3 V1)
-{
-    return V1.X * V1.X + V1.Y * V1.Y + V1.Z * V1.Z;
 }
 
 struct Vector3 V3Sub(struct Vector3 V1, struct Vector3 V2)

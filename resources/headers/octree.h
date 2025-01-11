@@ -42,24 +42,16 @@ struct Region
 
 bool Intersect(struct Cube c1, struct Cube c2)
 {
-    bool IsX = ((c1.center.X + c1.size) >= (c2.center.X - c2.size)) &&
-               ((c1.center.X - c1.size) <= (c2.center.X + c2.size));
-    bool IsY = ((c1.center.Y + c1.size) >= (c2.center.Y - c2.size)) &&
-               ((c1.center.Y - c1.size) <= (c2.center.Y + c2.size));
-    bool IsZ = ((c1.center.Z + c1.size) >= (c2.center.Z - c2.size)) &&
-               ((c1.center.Z - c1.size) <= (c2.center.Z + c2.size));
-
-    return IsX && IsY && IsZ;
+    float total_size = c1.size + c2.size;
+    return (fabs(c1.center.X - c2.center.X) <= total_size) &&
+           (fabs(c1.center.Y - c2.center.Y) <= total_size) &&
+           (fabs(c1.center.Z - c2.center.Z) <= total_size);
 }
 
 bool IsInCube(struct Cube c, struct Particule_obj p)
 {
-    bool IsX = ((c.center.X + c.size) >= (p.position.X - p.radius)) &&
-               ((c.center.X - c.size) <= (p.position.X + p.radius));
-    bool IsY = ((c.center.Y + c.size) >= (p.position.Y - p.radius)) &&
-               ((c.center.Y - c.size) <= (p.position.Y + p.radius));
-    bool IsZ = ((c.center.Z + c.size) >= (p.position.Z - p.radius)) &&
-               ((c.center.Z - c.size) <= (p.position.Z + p.radius));
-
-    return IsX && IsY && IsZ;
+    float size_with_radius = c.size + p.radius;
+    return (fabs(c.center.X - p.position.X) <= size_with_radius) &&
+           (fabs(c.center.Y - p.position.Y) <= size_with_radius) &&
+           (fabs(c.center.Z - p.position.Z) <= size_with_radius);
 }
